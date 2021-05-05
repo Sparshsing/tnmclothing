@@ -1,1 +1,1 @@
-web: gunicorn tnmclothing.wsgi.py --log-file -
+web: gunicorn tnmclothing.wsgi --log-file -
