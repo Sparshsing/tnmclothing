@@ -8,7 +8,7 @@ class Store(models.Model):
     storeCode = models.CharField(max_length=4, primary_key=True)
     emailAddress = models.EmailField(max_length=50)
     addressLine1 = models.CharField(max_length=50)
-    addressLine2 = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    addressLine2 = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=2)
     zipCode = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(99999)])
