@@ -4,7 +4,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 # Create your models here.
 
 class Purchase(models.Model):
-    purchaseId = models.AutoField(primary_key=True)
     status = models.CharField(max_length=10)
     style = models.CharField(max_length=30)
     size = models.CharField(max_length=5)
