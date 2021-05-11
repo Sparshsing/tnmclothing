@@ -10,8 +10,9 @@ class Purchase(models.Model):
     color = models.CharField(max_length=25)
     company = models.CharField(max_length=20, blank=True)
     warehouse = models.CharField(max_length=20)
-    ordered = models.IntegerField(validators=[MinValueValidator, MaxValueValidator])
+    ordered = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(999999)])
     orderDate = models.DateField()
+    arrivalDate = models.DateField(null=True)
     sfmId = models.CharField(max_length=50)
 
     def __str__(self):
