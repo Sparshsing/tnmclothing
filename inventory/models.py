@@ -16,7 +16,11 @@ class Inventory(models.Model):
 
     @property
     def inTransit(self):
-        return Purchase.objects.filter(sfmId=self.sfmId, status__icontains='transit').first().ordered
+        res = Purchase.objects.filter(sfmId=self.sfmId, status__icontains='transit').first()
+        if res:
+            return res.ordered
+        else:
+            return 0
 
     @property
     def unfulfilledCount(self):
