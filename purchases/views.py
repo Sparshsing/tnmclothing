@@ -3,7 +3,10 @@ from .serializers import PurchaseSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
+from .business_logic import ImportFiles
+import pandas as pd
 from datetime import timedelta
 
 # Create your views here.
@@ -40,5 +43,20 @@ class PurchaseViewSet(viewsets.ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+    @action(detail=False, methods=['POST'])
+    def import_file(self, request, pk=None):
+        myfile = request.FILES['purchaseFile']
+        if '.csv' in myfile.name:
+            data = pd.read_csv(myfile)
+            print(data.head())
+            errors = ImportFiles.import_purchases(data)
+            print(errors)
+        if '.xlsx' in myfile.name:
+            data = pd.read_excel(myfile, engine='openpyxl')
+            print(data.head())
+            errors = ImportFiles.import_purchases(data)
+            print(errors)
+        return Response({'errors': errors})
 
 

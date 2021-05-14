@@ -14,11 +14,11 @@ class Product(models.Model):
 
     @property
     def amountInStock(self):
-        inv = Inventory.objects.get(sfmId=self.sfmId)
-        if inv:
-            return inv.inStock
-        else:
+        inv = Inventory.objects.filter(sfmId=self.sfmId).first()
+        if inv is None:
             return 0
+        else:
+            return inv.inStock
 
     def __str__(self):
         return self.sfmId

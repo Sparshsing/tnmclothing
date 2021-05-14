@@ -4,8 +4,11 @@ from .serializers import ProductSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import ValidationError
+from .business_logic import ImportFiles
+import pandas as pd
 import datetime
 
 # Create your views here.
@@ -36,6 +39,23 @@ class ProductViewSet(viewsets.ModelViewSet):
             raise ValidationError(detail={"form": "Product saved but could not create inventory record"})
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=False, methods=['POST'])
+    def import_file(self, request, pk=None):
+
+        myfile = request.FILES['productsFile']
+
+        if '.csv' in myfile.name:
+            data = pd.read_csv(myfile)
+            print(data.head())
+            errors = ImportFiles.import_products(data)
+            print(errors)
+        if '.xlsx' in myfile.name:
+            data = pd.read_excel(myfile, engine='openpyxl')
+            print(data.head())
+            errors = ImportFiles.import_products(data)
+            print(errors)
+        return Response({'errors': errors})
 
 def create_inventory_record(p):
     new_inventory = Inventory(sfmId=p.sfmId, style=p.style, size=p.size, color=p.color, inStock=0, arrivalDate=datetime.date.today(), minimum=0, maximum=100)
