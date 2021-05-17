@@ -5,7 +5,7 @@ from orders.models import Order
 # Create your models here.
 
 class Inventory(models.Model):
-    sfmId = models.CharField(max_length=50, primary_key=True)
+    sfmId = models.CharField(max_length=50, unique=True)
     style = models.CharField(max_length=30)
     size = models.CharField(max_length=5)
     color = models.CharField(max_length=25)
