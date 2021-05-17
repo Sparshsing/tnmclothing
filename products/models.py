@@ -4,7 +4,7 @@ from inventory.models import Inventory
 # Create your models here.
 
 class Product(models.Model):
-    sfmId = models.CharField(max_length=50, unique=True)
+    sfmId = models.CharField(max_length=50, primary_key=True)
     style = models.CharField(max_length=30)
     size = models.CharField(max_length=5)
     color = models.CharField(max_length=25)
