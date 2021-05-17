@@ -24,24 +24,24 @@ class ImportFiles:
                 order.store = store
                 order.orderStatus = ''
                 order.saleDate = None if pd.isna(row['saledate']) else row['saledate'].date()
-                order.orderNo = '' if pd.isna(row['orderno']) else str(row['orderno'])
-                order.recipientName = '' if pd.isna(row['recipientname']) else str(row['recipientname'])
-                order.style = '' if pd.isna(row['style']) else str(row['style'])
-                order.size = '' if pd.isna(row['size']) else str(row['size'])
-                order.color = '' if pd.isna(row['color']) else str(row['color'])
-                order.design = '' if pd.isna(row['design']) else str(row['design'])
+                order.orderNo = '' if pd.isna(row['orderno']) else str(row['orderno']).strip()
+                order.recipientName = '' if pd.isna(row['recipientname']) else str(row['recipientname']).strip()
+                order.style = '' if pd.isna(row['style']) else str(row['style']).strip()
+                order.size = '' if pd.isna(row['size']) else str(row['size']).strip()
+                order.color = '' if pd.isna(row['color']) else str(row['color']).strip()
+                order.design = '' if pd.isna(row['design']) else str(row['design']).strip()
                 order.processing = 'N'
                 order.printed = 'N'
                 order.shipped = 'N'
                 order.sfmNotes = ''
-                order.buyerName = '' if pd.isna(row['buyername']) else str(row['buyername'])
+                order.buyerName = '' if pd.isna(row['buyername']) else str(row['buyername']).strip()
                 order.buyerEmail = ''
-                order.buyerComments = '' if pd.isna(row['buyercomments']) else str(row['buyercomments'])
-                order.giftMessages = '' if pd.isna(row['giftmessage']) else str(row['giftmessage'])
+                order.buyerComments = '' if pd.isna(row['buyercomments']) else str(row['buyercomments']).strip()
+                order.giftMessages = '' if pd.isna(row['giftmessage']) else str(row['giftmessage']).strip()
                 order.sfmId = str(order .style) + '-' + str(order.size) + '-' + str(order.color)
-                order.sku = '' if pd.isna(row['sku']) else str(row['sku'])
+                order.sku = '' if pd.isna(row['sku']) else str(row['sku']).strip()
                 order.shipDate = None
-                order.priorityShip = '' if pd.isna(row['priorityshipping']) else str(row['priorityshipping'])
+                order.priorityShip = '' if pd.isna(row['priorityshipping']) else str(row['priorityshipping']).strip()
                 order.customerPaidShipping = 0
                 order.trackingNumber = ''
                 order.save()
@@ -67,9 +67,9 @@ class ImportFiles:
                 if order is None:
                     raise Exception('order does not exist')
 
-                order.buyerEmail = '' if pd.isna(row['emailaddress']) else str(row['emailaddress'])
+                order.buyerEmail = '' if pd.isna(row['emailaddress']) else str(row['emailaddress']).strip()
                 order.customerPaidShipping = None if pd.isna(row['totalshippingcost']) else float(row['totalshippingcost'])
-                order.trackingNumber = '' if pd.isna(row['trackingnumber']) else str(row['trackingnumber'])
+                order.trackingNumber = '' if pd.isna(row['trackingnumber']) else str(row['trackingnumber']).strip()
                 order.save()
             except Exception as e:
                 errors.append('error row ' + str(index+1) + ': ' + str(e))

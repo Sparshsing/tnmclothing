@@ -21,10 +21,10 @@ class ImportFiles:
 
             try:
                 product = Product()
-                product.style = '' if pd.isna(row['style']) else str(row['style'])
-                product.size = '' if pd.isna(row['size']) else str(row['size'])
-                product.color = '' if pd.isna(row['color']) else str(row['color'])
-                product.sku = '' if pd.isna(row['sku']) else str(row['sku'])
+                product.style = '' if pd.isna(row['style']) else str(row['style']).strip()
+                product.size = '' if pd.isna(row['size']) else str(row['size']).strip()
+                product.color = '' if pd.isna(row['color']) else str(row['color']).strip()
+                product.sku = '' if pd.isna(row['sku']) else str(row['sku']).strip()
                 product.cost = None if pd.isna(row['cost']) else float(row['cost'])
                 product.price = None if pd.isna(row['price']) else float(row['price'])
                 product.sfmId = product.style + '-' + product.size + '-' + product.color
