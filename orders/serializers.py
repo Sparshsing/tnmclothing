@@ -13,7 +13,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ('orderId', 'store', 'storeName', 'orderStatus', 'saleDate', 'orderNo', 'orderCount', 'recipientName', 'style', 'size', 'color', 'design', 'processing', 'printed', 'shipped', 'sfmNotes', 'buyerName', 'buyerEmail', 'buyerComments', 'giftMessages', 'sfmId', 'sku', 'shipDate', 'priorityShip', 'customerPaidShipping', 'trackingNumber', 'productAvailability')
-        read_only_fields = ['productAvailability']
+        read_only_fields = ['orderId', 'productAvailability']
 
     def get_productAvailability(self, order):
         res = Inventory.objects.filter(sfmId=order.sfmId).first()

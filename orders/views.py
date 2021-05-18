@@ -59,33 +59,39 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_update(self, serializer):
-        inv = Inventory.objects.filter(sfmId=serializer.validated_data['sfmId']).first()
         instance = self.get_object()
+        sfmId = serializer.validated_data['sfmId']
+        shipped = serializer.validated_data['shipped']
+        printed = serializer.validated_data['printed']
         previousProcessing = instance.processing
-
-
-        newStatus = serializer.validated_data['status']
+        processing = serializer.validated_data['processing']
+        orderStatus = serializer.validated_data['orderStatus']
         # if status has not been changed by user manually
-        if newStatus == instance.orderStatus:
-            if serializer.validated_data['shipped'] == 'Y':
-                newStatus = 'Shipped'
-            elif serializer.validated_data['printed'] == 'Y':
-                newStatus = 'Printed'
+        #if newStatus in ['', 'Printed', 'Shipped']:
+        if shipped == 'Y':
+            orderStatus = 'Shipped'
+        elif printed == 'Y':
+            orderStatus = 'Printed'
+        elif processing == 'N':
+            orderStatus = 'Unfulfilled'
+        else:
+            orderStatus = ''
             # otherwise let it be empty, only in frontend show the calculated value.
             # else:
             #     if inv:
             #         newStatus = inv.productAvailability
             #     else:
             #         newStatus = "Invalid Product"
-        serializer.save(orderStatus=newStatus)
-        serializer.save()
+        serializer.save(orderStatus=orderStatus)
 
         # update inventory
-        if inv:
-            if previousProcessing == 'N' and serializer.validated_data['processing'] == 'Y':
+
+        if processing != previousProcessing:
+            inv = Inventory.objects.filter(sfmId=sfmId).first()
+            if inv and processing == 'Y':
                 inv.inStock = inv.inStock - 1
                 inv.save()
-            if previousProcessing and serializer.validated_data['processing'] == 'N':
+            if inv and processing == 'N':
                 inv.inStock = inv.inStock + 1
                 inv.save()
 
@@ -96,12 +102,12 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         if'.csv' in myfile.name:
             data = pd.read_csv(myfile)
-            print(data.head())
+            # print(data.head())
             errors = ImportFiles.import_orders(data)
             print(errors)
         if '.xlsx' in myfile.name:
             data = pd.read_excel(myfile, engine='openpyxl')
-            print(data.head())
+            # print(data.head())
             errors = ImportFiles.import_orders(data)
             print(errors)
         return Response({'errors': errors})

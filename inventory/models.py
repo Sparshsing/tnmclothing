@@ -34,7 +34,7 @@ class Inventory(models.Model):
             else:
                 return "Good"
         elif self.inTransit > 0:
-            return "Restock on " + self.arrivalDate
+            return "Restock on " + str(self.arrivalDate)
         else:
             return "Out Of Stock"
 

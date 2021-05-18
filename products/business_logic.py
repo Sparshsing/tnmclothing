@@ -1,8 +1,16 @@
 from .models import Product
 import pandas as pd
-from datetime import timedelta
+from inventory.models import Inventory
+from datetime import timedelta, date, datetime
 
-class ImportFiles:
+class Utilities:
+
+    @staticmethod
+    def create_inventory_record(p):
+        new_inventory = Inventory(sfmId=p.sfmId, style=p.style, size=p.size, color=p.color, inStock=0,
+                                  arrivalDate=date.today(), minimum=0, maximum=100)
+        new_inventory.save()
+
     @staticmethod
     def import_products(data):
 
@@ -29,9 +37,12 @@ class ImportFiles:
                 product.price = None if pd.isna(row['price']) else float(row['price'])
                 product.sfmId = product.style + '-' + product.size + '-' + product.color
                 product.save()
+                Utilities.create_inventory_record(product)
             except Exception as e:
                 errors.append('error row ' + str(index+1) + ': ' + str(e))
 
         return errors
+
+
 
 

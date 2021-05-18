@@ -1,5 +1,6 @@
 from .models import Order
-from .models import Store
+from stores.models import Store
+from inventory.models import Inventory
 import pandas as pd
 
 class ImportFiles:
@@ -16,13 +17,13 @@ class ImportFiles:
         print(newNames)
         print(data.dtypes)
         for index, row in data.iterrows():
-            print(row)
+            # print(row)
 
             try:
                 order = Order()
                 store = Store.objects.get(storeName=str(row['store']))
                 order.store = store
-                order.orderStatus = ''
+                order.orderStatus = 'Unfulfilled'
                 order.saleDate = None if pd.isna(row['saledate']) else row['saledate'].date()
                 order.orderNo = '' if pd.isna(row['orderno']) else str(row['orderno']).strip()
                 order.recipientName = '' if pd.isna(row['recipientname']) else str(row['recipientname']).strip()
@@ -45,6 +46,12 @@ class ImportFiles:
                 order.customerPaidShipping = 0
                 order.trackingNumber = ''
                 order.save()
+                # if order.processing == 'Y':
+                #     inv = Inventory.objects.filter(sfmId=order['sfmId']).first()
+                #     if inv:
+                #         inv.inStock = inv.inStock - 1
+                #         inv.save()
+
             except Exception as e:
                 errors.append('error row ' + str(index+1) + ': ' + str(e))
 

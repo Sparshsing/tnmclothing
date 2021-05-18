@@ -7,10 +7,9 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import ValidationError
-from .business_logic import ImportFiles
+from .business_logic import Utilities
 import pandas as pd
-import datetime
-
+from datetime import datetime, date
 # Create your views here.
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -23,7 +22,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     #         return ProductUpdateSerializer
     #     return ProductSerializer
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         sfm_id = serializer.validated_data['style'] + '-' + serializer.validated_data['size'] + '-' + \
@@ -34,7 +33,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             raise ValidationError(detail={"style": ["style-size-color already exists"]})
         new_product = serializer.save(sfmId=sfm_id)
         try:
-            create_inventory_record(new_product)
+            Utilities.create_inventory_record(new_product)
         except:
             raise ValidationError(detail={"form": "Product saved but could not create inventory record"})
         headers = self.get_success_headers(serializer.data)
@@ -48,15 +47,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         if '.csv' in myfile.name:
             data = pd.read_csv(myfile)
             print(data.head())
-            errors = ImportFiles.import_products(data)
+            errors = Utilities.import_products(data)
             print(errors)
         if '.xlsx' in myfile.name:
             data = pd.read_excel(myfile, engine='openpyxl')
             print(data.head())
-            errors = ImportFiles.import_products(data)
+            errors = Utilities.import_products(data)
             print(errors)
         return Response({'errors': errors})
 
-def create_inventory_record(p):
-    new_inventory = Inventory(sfmId=p.sfmId, style=p.style, size=p.size, color=p.color, inStock=0, arrivalDate=datetime.date.today(), minimum=0, maximum=100)
-    new_inventory.save()
+
