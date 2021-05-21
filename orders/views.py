@@ -93,8 +93,8 @@ class OrderViewSet(viewsets.ModelViewSet):
             orderStatus = 'Shipped'
         elif printed == 'Y':
             orderStatus = 'Printed'
-        else:
-            orderStatus = ''
+        if orderStatus=='' and processing == 'N':
+            orderStatus = 'Unfulfilled'
             # otherwise let it be empty, only in frontend show the calculated value.
             # else:
             #     if inv:
@@ -147,6 +147,42 @@ class OrderViewSet(viewsets.ModelViewSet):
             errors = ImportFiles.import_shippingDetails(data)
             print(errors)
         return Response({'errors': errors})
+
+    @action(detail=False, methods=['POST'])
+    def get_overview(self, request, pk=None):
+        print(request.data, type(request.data))
+        store = request.data['store']
+        startDate = request.data['startDate']
+        endDate = request.data['endDate']
+        orders = None
+        if store == 'All':
+            orders = Order.objects.all()
+        else:
+            orders = Order.objects.filter(store=store)
+        print(orders)
+        if startDate=='' and endDate!='':
+            orders = orders.filter(saleDate__lte=endDate)
+        elif endDate=='' and startDate!='':
+            orders = orders.filter(saleDate__gte=startDate)
+        elif startDate!='' and endDate!='':
+            orders = orders.filter(saleDate__gte=startDate, saleDate__lte=endDate)
+        result = {}
+        result['total'] = orders.count()
+        result['unfulfilled'] = orders.filter(orderStatus='Unfulfilled').count()
+        result['onhold'] = orders.filter(orderStatus='On Hold').count()
+        result['fulfilled'] = orders.filter(orderStatus__in=['Printed', 'Shipped']).count()
+        outofstock = 0
+        for order in orders:
+            if order.orderStatus=='':
+                inv = Inventory.objects.filter(sfmId=order.sfmId).first()
+                if inv and inv.productAvailability=='Out Of Stock':
+                    outofstock +=1
+        result['outofstock'] = outofstock
+
+        result['storecount'] = Store.objects.all().count()
+
+        return Response(result)
+
 
 class PrintingViewSet(viewsets.ReadOnlyModelViewSet):
     """

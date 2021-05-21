@@ -14,6 +14,9 @@ class Inventory(models.Model):
     minimum = models.IntegerField()
     maximum = models.IntegerField()
 
+    class Meta:
+        ordering = ('sfmId',)
+
     @property
     def inTransit(self):
         res = Purchase.objects.filter(sfmId=self.sfmId, status__icontains='transit').first()

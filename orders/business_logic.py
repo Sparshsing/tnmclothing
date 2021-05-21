@@ -23,7 +23,7 @@ class ImportFiles:
                 order = Order()
                 store = Store.objects.get(storeName=str(row['store']))
                 order.store = store
-                order.orderStatus = ''
+                order.orderStatus = 'Unfulfilled'
                 order.saleDate = None if pd.isna(row['saledate']) else row['saledate'].date()
                 order.orderNo = '' if pd.isna(row['orderno']) else str(row['orderno']).strip()
                 order.recipientName = '' if pd.isna(row['recipientname']) else str(row['recipientname']).strip()
