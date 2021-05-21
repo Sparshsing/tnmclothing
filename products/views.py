@@ -4,19 +4,29 @@ from .serializers import ProductSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
+from rest_framework.permissions import BasePermission, IsAdminUser
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import ValidationError
 from .business_logic import Utilities
 import pandas as pd
-from datetime import datetime, date
+from rest_framework import permissions
 # Create your views here.
+
+class ProductPermission(BasePermission):
+    def has_permission(self, request, view):
+        print(view.action)
+        if view.action=='import_file':
+            return (request.user.is_superuser)
+        if view.action=='list':
+            return True
+        return (request.user.is_superuser or request.user.is_staff)
 
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
     authentication_classes = (TokenAuthentication,)
-
+    permission_classes = [ProductPermission]
     # def get_serializer_class(self):
     #     if self.request.method == 'PUT':
     #         return ProductUpdateSerializer

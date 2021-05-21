@@ -1,4 +1,7 @@
+import django_filters
+
 from .models import Order
+from stores.models import Store
 from inventory.models import Inventory
 from .serializers import OrderSerializer
 from rest_framework import viewsets, status
@@ -14,6 +17,22 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
     authentication_classes = (TokenAuthentication,)
+    # filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    # filterset_fields = ['orderStatus']
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        user = request.user
+        if not user.is_superuser and not user.is_staff:
+            stores = Store.objects.filter(user=user)
+            queryset = Order.objects.filter(store__in=stores)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -26,12 +45,14 @@ class OrderViewSet(viewsets.ModelViewSet):
         inv = Inventory.objects.filter(sfmId=serializer.validated_data['sfmId']).first()
 
         processing = serializer.validated_data['processing']
-        newStatus = serializer.validated_data['status']
-        if newStatus == '':
-            if serializer.validated_data['shipped'] == 'Y':
-                newStatus = 'Shipped'
-            elif serializer.validated_data['printed'] == 'Y':
-                newStatus = 'Printed'
+        newStatus = serializer.validated_data['orderStatus']
+
+        if serializer.validated_data['shipped'] == 'Y':
+            newStatus = 'Shipped'
+        elif serializer.validated_data['printed'] == 'Y':
+            newStatus = 'Printed'
+        else:
+            newStatus = ''
             # otherwise let it be empty, only in frontend show the calculated value.
             # else:
             #     if inv:
@@ -72,8 +93,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             orderStatus = 'Shipped'
         elif printed == 'Y':
             orderStatus = 'Printed'
-        elif processing == 'N':
-            orderStatus = 'Unfulfilled'
         else:
             orderStatus = ''
             # otherwise let it be empty, only in frontend show the calculated value.
@@ -128,6 +147,16 @@ class OrderViewSet(viewsets.ModelViewSet):
             errors = ImportFiles.import_shippingDetails(data)
             print(errors)
         return Response({'errors': errors})
+
+class PrintingViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This viewset automatically provides `list` and `retrieve` actions.
+    """
+    serializer_class = OrderSerializer
+    queryset = Order.objects.exclude(orderStatus='Shipped')
+    authentication_classes = (TokenAuthentication,)
+
+
 
 
 

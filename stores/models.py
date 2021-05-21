@@ -1,11 +1,13 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
 class Store(models.Model):
     storeName = models.CharField(max_length=50, unique=True)
     storeCode = models.CharField(max_length=4, primary_key=True)
+    user = models.ForeignKey(User, related_name='store', null=True, on_delete=models.SET_NULL)
     emailAddress = models.EmailField(max_length=50)
     addressLine1 = models.CharField(max_length=50)
     addressLine2 = models.CharField(max_length=50)

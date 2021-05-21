@@ -15,14 +15,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from accounts.views import ListUsers, CustomAuthToken
+from orders.views import PrintingViewSet
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/orders/', include('orders.urls')),
+    path('api/printing/', PrintingViewSet.as_view({'get': 'list'})),
     path('api/products/', include('products.urls')),
     path('api/stores/', include('stores.urls')),
     path('api/purchases/', include('purchases.urls')),
     path('api/inventory/', include('inventory.urls')),
+    path('api/accounts/', ListUsers.as_view()),
+    path('api-token-auth/', CustomAuthToken.as_view()),
     path('auth/', obtain_auth_token)
 ]
