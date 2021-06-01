@@ -1,6 +1,7 @@
 from django.db import models
 from purchases.models import Purchase
 from orders.models import Order
+import datetime
 
 # Create your models here.
 
@@ -37,7 +38,7 @@ class Inventory(models.Model):
             else:
                 return "Good"
         elif self.inTransit > 0:
-            return "Restock on " + str(self.arrivalDate)
+            return "Restock on " + self.arrivalDate.strftime("%m/%d")
         else:
             return "Out Of Stock"
 

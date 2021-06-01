@@ -1,3 +1,4 @@
+
 import django_filters
 
 from .models import Order
@@ -9,6 +10,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import serializers
+import datetime
 import pandas as pd
 from .business_logic import ImportFiles
 
@@ -102,7 +104,14 @@ class OrderViewSet(viewsets.ModelViewSet):
             #         newStatus = inv.productAvailability
             #     else:
             #         newStatus = "Invalid Product"
-        serializer.save(orderStatus=orderStatus)
+        # if status changed to shipped
+        if orderStatus!=instance.orderStatus and orderStatus=="Shipped" and serializer.validated_data['shipDate'] is None:
+            serializer.save(orderStatus=orderStatus, shipDate=datetime.datetime.now())
+        # if status changed from shipped to something else
+        elif orderStatus!=instance.orderStatus and instance.orderStatus=="Shipped":
+            serializer.save(orderStatus=orderStatus, shipDate=None)
+        else:
+            serializer.save(orderStatus=orderStatus)
 
         # update inventory
 
