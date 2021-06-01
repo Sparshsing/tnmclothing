@@ -8,6 +8,7 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import serializers
 import pandas as pd
 from .business_logic import ImportFiles
 
@@ -155,6 +156,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         startDate = request.data['startDate']
         endDate = request.data['endDate']
         orders = None
+        if store == '':
+            raise serializers.ValidationError({"store": "store cannot be empty"})
         if store == 'All':
             orders = Order.objects.all()
         else:
