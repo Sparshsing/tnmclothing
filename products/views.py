@@ -49,6 +49,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def perform_destroy(self, instance):
+        sfmId = str(instance.sfmId)
+        instance.delete()
+        try:
+            inv = Inventory.objects.get(sfmId=sfmId)
+            inv.delete()
+        except Exception as e:
+            print(e)
+
     @action(detail=False, methods=['POST'])
     def import_file(self, request, pk=None):
 
