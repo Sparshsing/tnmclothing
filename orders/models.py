@@ -7,7 +7,7 @@ class Order(models.Model):
     orderId = models.AutoField(primary_key=True)
     store = models.ForeignKey(Store, related_name='order', null=True, on_delete=models.SET_NULL)
     orderStatus = models.CharField(max_length=15, blank=True)
-    saleDate = models.DateField(null=True)
+    saleDate = models.DateField(null=True, blank=True)
     orderNo = models.CharField(max_length=20)
     recipientName = models.CharField(max_length=50)
     style = models.CharField(max_length=30)
@@ -26,7 +26,7 @@ class Order(models.Model):
     sku = models.CharField(max_length=20, blank=True)
     shipDate = models.DateTimeField(null=True, blank=True)
     priorityShip = models.CharField(max_length=50, blank=True)
-    customerPaidShipping = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    customerPaidShipping = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     trackingNumber = models.CharField(max_length=30, blank=True)
 
     @property

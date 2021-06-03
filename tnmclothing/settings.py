@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'purchases',
     'orders',
     'inventory',
+    'invoices',
     'accounts.apps.AccountsConfig'
 ]
 
