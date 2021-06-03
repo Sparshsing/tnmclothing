@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/purchases/', include('purchases.urls')),
     path('api/inventory/', include('inventory.urls')),
     path('api/accounts/', include('accounts.urls')),
+    path('api/invoices/', include('invoices.urls')),
     path('api-token-auth/', CustomAuthToken.as_view()),
     path('auth/', obtain_auth_token)
 ]

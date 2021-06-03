@@ -15,5 +15,9 @@ class Store(models.Model):
     state = models.CharField(max_length=2)
     zipCode = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(99999)])
 
+    @property
+    def userFullName(self):
+        return str(self.user.last_name + " " + self.user.first_name)
+
     def __str__(self):
         return self.storeName
