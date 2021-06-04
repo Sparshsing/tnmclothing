@@ -10,22 +10,21 @@ def create_invoices(startDate, endDate):
     # startdatetime = datetime.combine(startDate, datetime.min.time())
     # enddatetime = datetime.combine(endDate, datetime.max.time())
     shipped_orders = Order.objects.filter(shipDate__range=(startdatetime, enddatetime)).filter(orderStatus="Shipped")
-    storenameset = set()
-    count = 0
-    for order in shipped_orders:
+    invoice_amounts = {}
 
-        if order.storeName not in storenameset:
+    for order in shipped_orders:
+        invoiceno = "SFMINV-" + startDate.strftime("%m%d") + "-" + endDate.strftime("%m%d") \
+                    + "-" + order.store.storeCode
+        if invoiceno not in list(invoice_amounts.keys()):
             print('adding store', order.storeName)
-            storenameset.add(order.storeName)
-            invoiceno = "SFMINV-" + startDate.strftime("%m%d") + "-" + endDate.strftime("%m%d")\
-                        + "-" + order.store.storeCode
+
             invoicenote = "invoice from SFM"
             # check if the invoice already exists, if so delete the invoice and create new
             Invoice.objects.filter(invoiceNo=invoiceno).delete()
             invoice = Invoice(startDate=startDate, endDate=endDate, storeName=order.storeName, store=order.store, invoiceNo=invoiceno,
-                              status="Unpaid", notes=invoicenote, subTotal=0, discount=0, taxrate=0, total=0)
+                              status="Unpaid", notes=invoicenote, subTotal=0, discount=0, taxrate=0)
             invoice.save()
-            count +=1
+            invoice_amounts[invoiceno] = 0
 
         print(order.saleDate)
         invoice = Invoice.objects.get(invoiceNo=invoiceno)
@@ -36,12 +35,23 @@ def create_invoices(startDate, endDate):
                                    orderNo=order.orderNo, customer=order.recipientName, description=order.sfmId,
                                    amount=amt)
         invoiceitem.save()
-        if order.customerPaidShipping is not None and order.customerPaidShipping>0:
+        invoice_amounts[invoiceno] += amt
+        if order.customerPaidShipping is not None and order.customerPaidShipping > 0:
             invoiceshipitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
-                                       orderNo=order.orderNo, customer=order.recipientName, description='Shipping',
-                                       amount=order.customerPaidShipping)
+                                           orderNo=order.orderNo, customer=order.recipientName, description='Shipping',
+                                           amount=order.customerPaidShipping)
             invoiceshipitem.save()
-    return count
+            invoice_amounts[invoiceno] += order.customerPaidShipping
+
+    updateInvoices(invoice_amounts)
+    return len(invoice_amounts)
+
+def updateInvoices(invoice_amounts):
+    invoices = Invoice.objects.filter(invoiceNo__in=list(invoice_amounts.keys()))
+    for invoice in invoices:
+        invoice.subTotal = invoice_amounts[invoice.invoiceNo]
+        invoice.save()
+
 
 def check():
     start = date(2021, 3,15)

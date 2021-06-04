@@ -1,5 +1,6 @@
 from django.db import models
 from stores.models import Store
+from decimal import Decimal
 
 # Create your models here.
 class Invoice(models.Model):
@@ -13,7 +14,12 @@ class Invoice(models.Model):
     subTotal = models.DecimalField(max_digits=9, decimal_places=2)
     discount = models.DecimalField(max_digits=9, decimal_places=2)
     taxrate = models.DecimalField(max_digits=4, decimal_places=2)
-    total = models.DecimalField(max_digits=9, decimal_places=2)
+
+    @property
+    def total(self):
+        totalafterdisc = self.subTotal - self.discount
+        totamount = (self.taxrate * Decimal(0.01) + Decimal(1)) * totalafterdisc
+        return round(totamount, 2)
 
     def __str__(self):
         return self.invoiceNo

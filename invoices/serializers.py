@@ -18,7 +18,7 @@ class InvoiceDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Invoice
-        fields = ['startDate', 'endDate', 'storeName', 'invoiceNo', 'status', 'notes', 'subTotal', 'discount', 'taxrate', 'total', 'items', 'store']
+        fields = ['startDate', 'endDate', 'storeName', 'invoiceNo', 'status', 'notes', 'subTotal', 'discount', 'taxrate', 'items', 'store', 'total']
 
 
 
