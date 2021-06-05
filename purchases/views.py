@@ -18,7 +18,7 @@ logger = logging.getLogger('db')
 
 class PurchaseViewSet(viewsets.ModelViewSet):
     serializer_class = PurchaseSerializer
-    queryset = Purchase.objects.all()
+    queryset = Purchase.objects.all().order_by('-id')
     authentication_classes = (TokenAuthentication,)
 
     def create(self, request, *args, **kwargs):

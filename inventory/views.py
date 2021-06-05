@@ -7,6 +7,6 @@ from rest_framework.authentication import TokenAuthentication
 
 class InventoryViewSet(viewsets.ModelViewSet):
     serializer_class = InventorySerializer
-    queryset = Inventory.objects.all()
+    queryset = Inventory.objects.all().order_by('sfmId')
     authentication_classes = (TokenAuthentication,)
 

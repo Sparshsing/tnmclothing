@@ -32,7 +32,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         user = request.user
         if not user.is_superuser and not user.is_staff:
             stores = Store.objects.filter(user=user)
-            queryset = Order.objects.filter(store__in=stores)
+            queryset = self.get_queryset().filter(store__in=stores)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -53,20 +53,20 @@ class OrderViewSet(viewsets.ModelViewSet):
         inv = Inventory.objects.filter(sfmId=serializer.validated_data['sfmId']).first()
 
         processing = serializer.validated_data['processing']
-        newStatus = serializer.validated_data['orderStatus']
+        newStatus = 'Unfulfilled'
 
+        if processing == 'Y':
+            newStatus = 'Processed'
+        if serializer.validated_data['printed'] == 'Y':
+            newStatus = 'Printed'
         if serializer.validated_data['shipped'] == 'Y':
             newStatus = 'Shipped'
-        elif serializer.validated_data['printed'] == 'Y':
-            newStatus = 'Printed'
-        else:
-            newStatus = ''
-            # otherwise let it be empty, only in frontend show the calculated value.
-            # else:
-            #     if inv:
-            #         newStatus = inv.productAvailability
-            #     else:
-            #         newStatus = "Invalid Product"
+        # otherwise let it be empty, only in frontend show the calculated value.
+        # else:
+        #     if inv:
+        #         newStatus = inv.productAvailability
+        #     else:
+        #         newStatus = "Invalid Product"
         serializer.save(orderStatus=newStatus)
         if inv:
             if processing == 'Y':
@@ -89,6 +89,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         instance = self.get_object()
+        oldStatus =instance.orderStatus
         sfmId = serializer.validated_data['sfmId']
         shipped = serializer.validated_data['shipped']
         printed = serializer.validated_data['printed']
@@ -97,27 +98,34 @@ class OrderViewSet(viewsets.ModelViewSet):
         orderStatus = serializer.validated_data['orderStatus']
         # if status has not been changed by user manually
         #if newStatus in ['', 'Printed', 'Shipped']:
-        if shipped == 'Y':
-            orderStatus = 'Shipped'
-        elif printed == 'Y':
-            orderStatus = 'Printed'
-        if orderStatus=='' and processing == 'N':
+        if orderStatus != 'Cancelled':
             orderStatus = 'Unfulfilled'
-            # otherwise let it be empty, only in frontend show the calculated value.
-            # else:
-            #     if inv:
-            #         newStatus = inv.productAvailability
-            #     else:
-            #         newStatus = "Invalid Product"
+            if processing == 'Y':
+                orderStatus = 'Processed'
+            if printed == 'Y':
+                orderStatus = 'Printed'
+            if shipped == 'Y':
+                orderStatus = 'Shipped'
+
+
+
+        # otherwise let it be empty, only in frontend show the calculated value.
+        # else:
+        #     if inv:
+        #         newStatus = inv.productAvailability
+        #     else:
+        #         newStatus = "Invalid Product"
         # if status changed to shipped
-        if orderStatus!=instance.orderStatus and orderStatus=="Shipped" and serializer.validated_data['shipDate'] is None:
+        if orderStatus!=oldStatus and orderStatus=="Shipped" and serializer.validated_data['shipDate'] is None:
             serializer.save(orderStatus=orderStatus, shipDate=datetime.datetime.now())
         # if status changed from shipped to something else
-        elif orderStatus!=instance.orderStatus and instance.orderStatus=="Shipped":
+        elif orderStatus!=oldStatus and oldStatus=="Shipped":
             serializer.save(orderStatus=orderStatus, shipDate=None)
         else:
             serializer.save(orderStatus=orderStatus)
 
+        if orderStatus != oldStatus:
+            logger.info(self.request.user.username + ' updated order status to ' + orderStatus)
         # update inventory
 
         if processing != previousProcessing:
@@ -226,7 +234,7 @@ class PrintingViewSet(viewsets.ReadOnlyModelViewSet):
     This viewset automatically provides `list` and `retrieve` actions.
     """
     serializer_class = OrderSerializer
-    queryset = Order.objects.exclude(orderStatus='Shipped')
+    queryset = Order.objects.exclude(orderStatus='Cancelled').exclude(orderStatus='Shipped').order_by('-orderId')
     authentication_classes = (TokenAuthentication,)
 
 

@@ -12,7 +12,7 @@ from .serializers import InvoiceSerializer, InvoiceDetailsSerializer
 
 
 class InvoiceListView(generics.ListAPIView):
-    queryset = Invoice.objects.all()
+    queryset = Invoice.objects.all().order_by('-id')
     serializer_class = InvoiceSerializer
     authentication_classes = (TokenAuthentication,)
 
@@ -22,7 +22,7 @@ class InvoiceListView(generics.ListAPIView):
         if not request.user.is_superuser:
             stores = Store.objects.filter(user=request.user.id)
             storenames = [s.storeName for s in stores]
-            queryset = Invoice.objects.filter(storeName__in=storenames)
+            queryset = self.get_queryset().filter(storeName__in=storenames)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

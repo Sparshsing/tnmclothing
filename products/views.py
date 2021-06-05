@@ -27,7 +27,7 @@ class ProductPermission(BasePermission):
 
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().order_by('sfmId')
     authentication_classes = (TokenAuthentication,)
     permission_classes = [ProductPermission]
     # def get_serializer_class(self):
