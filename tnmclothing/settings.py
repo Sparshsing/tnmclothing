@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from decouple import config
 from dj_database_url import parse as dburl
+import logging.config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -49,7 +50,8 @@ INSTALLED_APPS = [
     'orders',
     'inventory',
     'invoices',
-    'accounts.apps.AccountsConfig'
+    'accounts.apps.AccountsConfig',
+    'events'
 ]
 
 MIDDLEWARE = [
@@ -147,3 +149,28 @@ STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
+    },
+    'handlers': {
+        'db_log': {
+            'level': 'INFO',
+            'class': 'events.db_log_handler.DatabaseLogHandler'
+        },
+    },
+    'loggers': {
+        'db': {
+            'handlers': ['db_log'],
+            'level': 'INFO'
+        }
+    }
+}

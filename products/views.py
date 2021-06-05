@@ -11,13 +11,16 @@ from rest_framework.exceptions import ValidationError
 from .business_logic import Utilities
 import pandas as pd
 from rest_framework import permissions
-# Create your views here.
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger('db')
 
 class ProductPermission(BasePermission):
     def has_permission(self, request, view):
         print(view.action)
         if view.action=='import_file':
-            return (request.user.is_superuser)
+            return (request.user.is_superuser or request.user.is_staff)
         if view.action=='list':
             return True
         return (request.user.is_superuser or request.user.is_staff)
@@ -44,9 +47,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         new_product = serializer.save(sfmId=sfm_id)
         try:
             Utilities.create_inventory_record(new_product)
+            logger.info(request.user.username + ' created product ' + sfm_id + 'and an inventory record created automatically')
         except:
+            logger.error(request.user.username + ' created product ' + sfm_id + 'but inventory creation failed')
             raise ValidationError(detail={"form": "Product saved but could not create inventory record"})
         headers = self.get_success_headers(serializer.data)
+        logger.info(request.user.username + ' created product ' + sfm_id)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_destroy(self, instance):
@@ -55,8 +61,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         try:
             inv = Inventory.objects.get(sfmId=sfmId)
             inv.delete()
+            logger.info(self.request.user.username + ' deleted product ' + sfmId + ' and inventory record was deleted automatically.')
         except Exception as e:
+            logger.error(self.request.user.username + ' deleted product ' + sfmId + ' but inventory not deleted. Maybe inventory record was not there')
             print(e)
+
+    def perform_update(self, serializer):
+        logger.info(
+            self.request.user.username + ' updated product ' + serializer.data['sfmId'])
+        serializer.save()
 
     @action(detail=False, methods=['POST'])
     def import_file(self, request, pk=None):
@@ -73,6 +86,12 @@ class ProductViewSet(viewsets.ModelViewSet):
             print(data.head())
             errors = Utilities.import_products(data)
             print(errors)
+        if len(errors) == 0:
+            logger.info(request.user.username + ' imported products file ' + str(myfile.name))
+        else:
+            errorstring = ','.join(errors)
+            errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
+            logger.exception(request.user.username + ' imported products file ' + str(myfile.name) + ' with errors ' + errorstring)
         return Response({'errors': errors})
 
 

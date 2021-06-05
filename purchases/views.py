@@ -9,6 +9,10 @@ from rest_framework.exceptions import ValidationError
 from .business_logic import Utilities
 import pandas as pd
 from datetime import timedelta
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger('db')
 
 # Create your views here.
 
@@ -27,8 +31,10 @@ class PurchaseViewSet(viewsets.ModelViewSet):
         try:
             Utilities.update_inventory(new_purchase)
         except:
+            logger.error(request.user.username + ' created purchase id ' + str(new_purchase.id) + ' sfmid ' + sfm_id + ' but could not update or create product, inventory record')
             raise ValidationError(detail={"form": "Purchase saved but could not update or create product, inventory record"})
         headers = self.get_success_headers(serializer.data)
+        logger.info(request.user.username + ' created purchase id ' + str(new_purchase.id) + ' sfmid ' + sfm_id)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
@@ -45,13 +51,23 @@ class PurchaseViewSet(viewsets.ModelViewSet):
         try:
             Utilities.update_inventory(new_purchase, oldStatus)
         except:
+            logger.error(request.user.username + ' updated purchase id ' + str(new_purchase.id) + ' sfmid ' + sfm_id + ' but some error occurred in updaing inventory')
             raise ValidationError(detail={"form": "Purchase saved but could not update or create product, inventory record"})
         if getattr(instance, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
-
+        logger.info(request.user.username + ' updated purchase id ' + str(new_purchase.id) + ' sfmid ' + sfm_id)
         return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        id = instance.id
+        sfmId = instance.sfmId
+        self.perform_destroy(instance)
+        logger.info(
+            self.request.user.username + ' deleted purchase id ' + str(id) + ' sfmid ' + sfmId)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['POST'])
     def import_file(self, request, pk=None):
@@ -66,6 +82,13 @@ class PurchaseViewSet(viewsets.ModelViewSet):
             print(data.head())
             errors = Utilities.import_purchases(data)
             print(errors)
+
+        if len(errors) == 0:
+            logger.info(request.user.username + ' imported purchases file ' + str(myfile.name))
+        else:
+            errorstring = ','.join(errors)
+            errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
+            logger.exception(request.user.username + ' imported purchases file ' + str(myfile.name) + ' with errors ' + errorstring)
         return Response({'errors': errors})
 
 

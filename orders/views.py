@@ -13,6 +13,10 @@ from rest_framework import serializers
 import datetime
 import pandas as pd
 from .business_logic import ImportFiles
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger('db')
 
 # Create your views here.
 
@@ -42,6 +46,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        logger.info(request.user.username + ' created Order Id ' + str(serializer.data['orderId']))
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
@@ -79,7 +84,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
-
+        logger.info(request.user.username + ' updated Order Id ' + str(instance.orderId))
         return Response(serializer.data)
 
     def perform_update(self, serializer):
@@ -124,9 +129,15 @@ class OrderViewSet(viewsets.ModelViewSet):
                 inv.inStock = inv.inStock + 1
                 inv.save()
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        id = instance.orderId
+        self.perform_destroy(instance)
+        logger.info(request.user.username + ' deleted Order Id ' + str(id))
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(detail=False, methods=['POST'])
     def import_ordersfile(self, request, pk=None):
-
         myfile = request.FILES['ordersFile']
 
         if'.csv' in myfile.name:
@@ -139,6 +150,13 @@ class OrderViewSet(viewsets.ModelViewSet):
             # print(data.head())
             errors = ImportFiles.import_orders(data)
             print(errors)
+        if len(errors) == 0:
+            logger.info(request.user.username + ' imported orders file ' + str(myfile.name))
+        else:
+            errorstring = ','.join(errors)
+            errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
+            logger.exception(
+                request.user.username + ' imported orders file ' + str(myfile.name) + ' with errors ' + errorstring)
         return Response({'errors': errors})
 
     @action(detail=False, methods=['POST'])
@@ -156,6 +174,13 @@ class OrderViewSet(viewsets.ModelViewSet):
             print(data.head())
             errors = ImportFiles.import_shippingDetails(data)
             print(errors)
+
+        if len(errors) == 0:
+            logger.info(request.user.username + ' imported shipping file ' + str(myfile.name))
+        else:
+            errorstring = ','.join(errors)
+            errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
+            logger.exception(request.user.username + ' imported shipping file ' + str(myfile.name) + ' with errors ' + errorstring)
         return Response({'errors': errors})
 
     @action(detail=False, methods=['POST'])

@@ -8,7 +8,10 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 
 from accounts.serializers import ChangePasswordSerializer, UpdateUserSerializer, ViewUserSerializer
+import logging
 
+# Get an instance of a logger
+logger = logging.getLogger('db')
 
 class ListUsers(APIView):
     """
@@ -50,12 +53,20 @@ class ChangePasswordView(generics.UpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
 
+    def perform_update(self, serializer):
+        serializer.save()
+        logger.info(self.request.user.username + ' updated the password')
+
 class UpdateProfileView(generics.UpdateAPIView):
 
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     authentication_classes = (authentication.TokenAuthentication,)
     serializer_class = UpdateUserSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
+        logger.info(self.request.user.username + ' updated the profile')
 
 class ViewProfileView(generics.RetrieveAPIView):
 

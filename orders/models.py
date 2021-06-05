@@ -31,6 +31,8 @@ class Order(models.Model):
 
     @property
     def storeName(self):
+        if self.store is None:
+            return 'Store Not Exists'
         return self.store.storeName
 
     @property
