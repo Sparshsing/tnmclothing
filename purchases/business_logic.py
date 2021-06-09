@@ -8,32 +8,31 @@ class Utilities:
     @staticmethod
     def update_inventory(purchase, oldStatus=''):
 
-        product = Product.objects.filter(sfmId=purchase.sfmId).first()
-        if product is None:
-            Utilities.create_product_inventory(purchase)
+        Utilities.create_product_inventory(purchase)
 
-        # if creating for first time with status transit
-        if oldStatus=='' and purchase.status == 'In Transit':
-            return
-        if oldStatus != purchase.status:
-            inventory = Inventory.objects.filter(sfmId=purchase.sfmId).first()
-            if inventory:
-                if purchase.status == 'In Transit':
-                    inventory.inStock = inventory.inStock - purchase.ordered
-                else:
-                    inventory.inStock = inventory.inStock + purchase.ordered
-                inventory.save()
-            else:
-                raise Exception('Inventory does not exist')
+        inventory = Inventory.objects.filter(sfmId=purchase.sfmId).first()
+        if purchase.status == 'Received':
+            inventory.inStock = inventory.inStock + purchase.ordered
+            inventory.arrivalDate = None
+
+        if purchase.status != 'Received':
+            inventory.arrivalDate = purchase.arrivalDate
+            if oldStatus == 'Received':
+                inventory.inStock = inventory.inStock - purchase.ordered
+        inventory.save()
 
     @staticmethod
     def create_product_inventory(purchase):
-        new_Product = Product(sfmId=purchase.sfmId, style=purchase.style, size=purchase.size, color=purchase.color, cost=0.0, price=0.0)
-        new_Product.save()
-        in_stock = 0 if purchase.status == 'In Transit' else purchase.ordered
-        new_inventory = Inventory(sfmId=purchase.sfmId, style=purchase.style, size=purchase.size, color=purchase.color, inStock=in_stock,
-                                  arrivalDate=date.today(), minimum=0, maximum=100)
-        new_inventory.save()
+        prod = Product.objects.filter(sfmId=purchase.sfmId).first()
+        if prod is None:
+            new_Product = Product(sfmId=purchase.sfmId, style=purchase.style, size=purchase.size, color=purchase.color, cost=0.0, price=0.0)
+            new_Product.save()
+        inv = Inventory.objects.filter(sfmId=purchase.sfmId).first()
+        # if inventory exists return else create inventory
+        if inv is None:
+            new_inventory = Inventory(sfmId=purchase.sfmId, style=purchase.style, size=purchase.size, color=purchase.color, inStock=0.0,
+                                      arrivalDate=date.today(), minimum=0, maximum=100)
+            new_inventory.save()
 
     @staticmethod
     def import_purchases(data):

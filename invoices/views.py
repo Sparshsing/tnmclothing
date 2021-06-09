@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 from datetime import datetime
@@ -9,16 +10,20 @@ from .models import Invoice, InvoiceItems
 from .logic import create_invoices
 from stores.models import Store
 from .serializers import InvoiceSerializer, InvoiceDetailsSerializer
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger('db')
 
 
-class InvoiceListView(generics.ListAPIView):
-    queryset = Invoice.objects.all().order_by('-id')
+class InvoiceViewSet(viewsets.ModelViewSet):
+    queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
     authentication_classes = (TokenAuthentication,)
 
     def list(self, request, *args, **kwargs):
 
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.get_queryset().order_by('-id')
         if not request.user.is_superuser:
             stores = Store.objects.filter(user=request.user.id)
             storenames = [s.storeName for s in stores]
@@ -31,14 +36,17 @@ class InvoiceListView(generics.ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-class InvoiceDetailView(generics.RetrieveAPIView):
-    queryset = Invoice.objects.all()
-    serializer_class = InvoiceDetailsSerializer
-    authentication_classes = (TokenAuthentication,)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = InvoiceDetailsSerializer(instance)
+        return Response(serializer.data)
 
-@api_view(['POST'])
-@authentication_classes([TokenAuthentication])
-def generate_invoices(request):
+    def perform_update(self, serializer):
+        serializer.save()
+        logger.info(self.request.user.username + ' updated Invoice ' + str(serializer.data['invoiceNo']))
+
+    @action(detail=False, methods=['POST'])
+    def generate_invoices(request):
         errors = []
         startDate = None
         endDate = None

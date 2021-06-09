@@ -5,7 +5,7 @@ from stores.serializers import StoreSerializer
 class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invoice
-        fields = '__all__'
+        fields = ('id', 'startDate', 'endDate', 'store', 'storeName', 'invoiceNo', 'status', 'notes', 'subTotal', 'discount', 'taxrate', 'total')
 
 class InvoiceItemsSerializer(serializers.ModelSerializer):
     class Meta:

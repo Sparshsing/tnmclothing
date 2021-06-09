@@ -31,8 +31,9 @@ def create_invoices(startDate, endDate):
         product = Product.objects.get(sfmId=order.sfmId)
         amt = product.price
         orderdate = order.saleDate if order.saleDate is not None else order.shipDate.date()
+        desc = order.sfmId + '-' + order.design
         invoiceitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
-                                   orderNo=order.orderNo, customer=order.recipientName, description=order.sfmId,
+                                   orderNo=order.orderNo, customer=order.recipientName, description=desc,
                                    amount=amt)
         invoiceitem.save()
         invoice_amounts[invoiceno] += amt
