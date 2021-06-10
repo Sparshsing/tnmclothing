@@ -10,7 +10,7 @@ class Store(models.Model):
     user = models.ForeignKey(User, related_name='store', null=True, on_delete=models.SET_NULL)
     emailAddress = models.EmailField(max_length=50)
     addressLine1 = models.CharField(max_length=50)
-    addressLine2 = models.CharField(max_length=50)
+    addressLine2 = models.CharField(max_length=50, blank=True)
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=2)
     zipCode = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(99999)])

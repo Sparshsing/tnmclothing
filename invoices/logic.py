@@ -9,8 +9,9 @@ def create_invoices(startDate, endDate):
 
     # startdatetime = datetime.combine(startDate, datetime.min.time())
     # enddatetime = datetime.combine(endDate, datetime.max.time())
-    shipped_orders = Order.objects.filter(shipDate__range=(startdatetime, enddatetime)).filter(orderStatus="Shipped")
+    shipped_orders = Order.objects.filter(shipDate__range=(startdatetime, enddatetime)).filter(orderStatus="Shipped").order_by('orderNo')
     invoice_amounts = {}
+    orderNoList = []
 
     for order in shipped_orders:
         invoiceno = "SFMINV-" + startDate.strftime("%m%d") + "-" + endDate.strftime("%m%d") \
@@ -27,22 +28,24 @@ def create_invoices(startDate, endDate):
             invoice_amounts[invoiceno] = 0
 
         print(order.saleDate)
+        orderdate = order.saleDate if order.saleDate is not None else order.shipDate.date()
         invoice = Invoice.objects.get(invoiceNo=invoiceno)
+        if order.customerPaidShipping is not None and order.customerPaidShipping > 0 and order.orderNo not in orderNoList:
+            invoiceshipitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
+                                           orderNo=order.orderNo, customer=order.recipientName, description='Shipping',
+                                           amount=order.customerPaidShipping)
+            invoiceshipitem.save()
+            invoice_amounts[invoiceno] += order.customerPaidShipping
+        orderNoList.append(order.orderNo)
         product = Product.objects.get(sfmId=order.sfmId)
         amt = product.price
-        orderdate = order.saleDate if order.saleDate is not None else order.shipDate.date()
         desc = order.sfmId + '-' + order.design
         invoiceitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
                                    orderNo=order.orderNo, customer=order.recipientName, description=desc,
                                    amount=amt)
         invoiceitem.save()
         invoice_amounts[invoiceno] += amt
-        if order.customerPaidShipping is not None and order.customerPaidShipping > 0:
-            invoiceshipitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
-                                           orderNo=order.orderNo, customer=order.recipientName, description='Shipping',
-                                           amount=order.customerPaidShipping)
-            invoiceshipitem.save()
-            invoice_amounts[invoiceno] += order.customerPaidShipping
+
 
     updateInvoices(invoice_amounts)
     return len(invoice_amounts)

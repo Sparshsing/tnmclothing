@@ -11,7 +11,7 @@ class Inventory(models.Model):
     size = models.CharField(max_length=5)
     color = models.CharField(max_length=25)
     inStock = models.IntegerField()
-    arrivalDate = models.DateField()
+    arrivalDate = models.DateField(null=True)
     minimum = models.IntegerField()
     maximum = models.IntegerField()
 

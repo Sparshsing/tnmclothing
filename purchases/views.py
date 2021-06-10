@@ -50,7 +50,8 @@ class PurchaseViewSet(viewsets.ModelViewSet):
         new_purchase = serializer.save(arrivalDate=arrival_date, sfmId=sfm_id)
         try:
             Utilities.update_inventory(new_purchase, oldStatus)
-        except:
+        except Exception as e:
+            print(e)
             logger.error(request.user.username + ' updated purchase id ' + str(new_purchase.id) + ' sfmid ' + sfm_id + ' but some error occurred in updaing inventory')
             raise ValidationError(detail={"form": "Purchase saved but could not update or create product, inventory record"})
         if getattr(instance, '_prefetched_objects_cache', None):
