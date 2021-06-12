@@ -1,6 +1,7 @@
 from .models import Order
 from stores.models import Store
 from inventory.models import Inventory
+from datetime import datetime
 import pandas as pd
 
 class ImportFiles:
@@ -21,7 +22,7 @@ class ImportFiles:
 
             try:
                 order = Order()
-                store = Store.objects.get(storeName=str(row['store']))
+                store = Store.objects.get(storeName=str(row['store']).strip())
                 order.store = store
                 order.orderStatus = 'Unfulfilled'
                 order.saleDate = None if pd.isna(row['saledate']) else row['saledate'].date()
@@ -53,7 +54,7 @@ class ImportFiles:
                 #         inv.save()
 
             except Exception as e:
-                errors.append('error row ' + str(index+1) + ': ' + str(e))
+                errors.append('error row ' + str(index+2) + ': ' + str(e))
 
         return errors
 
@@ -77,9 +78,11 @@ class ImportFiles:
                     order.buyerEmail = '' if pd.isna(row['emailaddress']) else str(row['emailaddress']).strip()
                     order.customerPaidShipping = None if pd.isna(row['totalshippingcost']) else float(row['totalshippingcost'])
                     order.trackingNumber = '' if pd.isna(row['trackingnumber']) else str(row['trackingnumber']).strip()
+                    order.orderStatus = 'Shipped'
+                    order.shipDate = datetime.utcnow()
                     order.save()
             except Exception as e:
-                errors.append('error row ' + str(index+1) + ': ' + str(e))
+                errors.append('error row ' + str(index+2) + ': ' + str(e))
 
         return errors
 

@@ -117,7 +117,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         #         newStatus = "Invalid Product"
         # if status changed to shipped
         if orderStatus!=oldStatus and orderStatus=="Shipped" and serializer.validated_data['shipDate'] is None:
-            serializer.save(orderStatus=orderStatus, shipDate=datetime.datetime.now())
+            serializer.save(orderStatus=orderStatus, shipDate=datetime.datetime.utcnow())
         # if status changed from shipped to something else
         elif orderStatus!=oldStatus and oldStatus=="Shipped":
             serializer.save(orderStatus=orderStatus, shipDate=None)

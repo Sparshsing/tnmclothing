@@ -39,7 +39,7 @@ class Utilities:
                 product.save()
                 Utilities.create_inventory_record(product)
             except Exception as e:
-                errors.append('error row ' + str(index+1) + ': ' + str(e))
+                errors.append('error row ' + str(index+2) + ': ' + str(e))
 
         return errors
 
