@@ -28,7 +28,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = ['sfm-dropshipping.herokuapp.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['sfm-dropshipping.herokuapp.com', '127.0.0.1', 'localhost', 'api.sfmdropship.com']
 
 
 # Application definition
@@ -69,6 +69,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "https://sparshsing.github.io",
     "http://localhost:3000",
+    "https://sfmdropship.com",
 ]
 
 REST_FRAMEWORK = {
