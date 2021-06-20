@@ -1,19 +1,28 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import api_view, authentication_classes
 from datetime import datetime
 from .models import Invoice, InvoiceItems
-from .logic import create_invoices
+from .logic import create_invoices, generatepdf
 from stores.models import Store
 from .serializers import InvoiceSerializer, InvoiceDetailsSerializer
 import logging
 
+
 # Get an instance of a logger
 logger = logging.getLogger('db')
+
+def invoice_pdf_view(request, id, *args):
+    invoice = get_object_or_404(Invoice, id=id)
+    items = InvoiceItems.objects.filter(invoice=invoice)
+    store = Store.objects.filter(storeCode=invoice.store.storeCode).first()
+    context = {"invoice": invoice, "items": items, "store": store}
+
+    generatepdf(id)
+    return render(request, 'invoiceDetails.html', context)
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):

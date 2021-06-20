@@ -1,7 +1,12 @@
+from django.template.loader import get_template
+
 from orders.models import Order
 from products.models import Product
 from invoices.models import Invoice, InvoiceItems
+from stores.models import Store
 from datetime import datetime, date
+from xhtml2pdf import pisa
+from django.conf import settings
 
 def create_invoices(startDate, endDate):
     startdatetime = datetime(startDate.year, startDate.month, startDate.day)
@@ -56,6 +61,30 @@ def updateInvoices(invoice_amounts):
         invoice.subTotal = invoice_amounts[invoice.invoiceNo]
         invoice.save()
 
+def generatepdf(id):
+    invoice = Invoice.objects.get(id=id)
+    items = InvoiceItems.objects.filter(invoice=invoice)
+    store = Store.objects.filter(storeCode=invoice.store.storeCode).first()
+    context = {"invoice": invoice, "items": items, "store": store}
+    template_path = 'invoiceDetails.html'
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # create a pdf
+    media_root = settings.MEDIA_ROOT
+    output_filename = invoice.invoiceNo + '.pdf'
+    output_filepath = media_root.joinpath('invoicepdfs').joinpath(output_filename)
+    result_file = open(output_filepath, "w+b")
+    pisa_status = pisa.CreatePDF(
+        html, dest=result_file)
+    result_file.close()
+
+    if pisa_status.err:
+        print('error while generating pdf ' + output_filename)
+        return
+
+    invoice.attachment.name = 'invoicepdfs/' + output_filename
+    invoice.save()
 
 def check():
     start = date(2021, 3,15)

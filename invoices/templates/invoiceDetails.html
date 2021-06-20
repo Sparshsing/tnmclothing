@@ -1,0 +1,124 @@
+<html>
+    <body>
+        <div>
+      <table style="width:800px">
+        <tr>
+          <td><h1 style="color:rgb(47,83,149)">Invoice</h1></td>
+          <td></td>
+          <td><img src="logo" alt='SFM' style="width:120px"></img></td>
+        </tr>
+        <tr><td></td><td></td></tr>
+        <tr>
+          <td style=" vertical-align:top">
+            <div>
+              <h4 style=" color:rgb(47,83,149)">Invoice Number</h4><div>{{invoice.invoiceNo}}</div>
+              <h4 style=" color:rgb(47,83,149)">Date Of Issue</h4><p>{% now "m/d/y" %}</p>
+            </div>
+          </td>
+          <td style=" vertical-align:top">
+            <div>
+              <h4 style=" color:rgb(47,83,149)">SFM Dropshipping</h4>
+              <p>My company address line 1</p>
+              <p>My company address line 2</p>
+              <p>My company address line 3</p>
+              <p>sfmdropshipping@gmail.com</p>
+              <p>9988776655</p>
+            </div>
+          </td>
+          <td></td>
+        </tr>
+        <tr><td></td><td></td></tr>
+        <tr>
+          <td style=" vertical-align:top">
+            <div>
+              <h4 style=" color:rgb(47,83,149)">Billed To</h4>
+              <table>
+                {% if store %} <tr><td>{{store.userFullName}}</td></tr> {% endif %}
+                <tr><td>{{invoice.storeName}}</td></tr>
+                {% if store %} <tr><td>{{store.addressLine1}}</td></tr> {% endif %}
+                {% if store %} <tr><td>{{store.addressLine2}}</td></tr> {% endif %}
+                {% if store %} <tr><td>{{store.city}}, {{invoiceDetails.store.state}}</td></tr> {% endif %}
+                {% if store %} <tr><td>{{store.zipCode}}</td></tr> {% endif %}
+                {% if store %} <tr><td>{{store.emailAddress}}</td></tr> {% endif %}
+              </table>
+            </div>
+          </td>
+          <td style=" vertical-align:top">
+            <div>
+              <h4 style=" color:rgb(47,83,149)">Overview</h4>
+              <table>
+              <tr>
+                <td>Start Date</td>
+                <td>{{invoice.startDate|date:"m/d/y"}}</td>
+              </tr>
+              <tr>
+                <td>End Date</td>
+                <td>{{invoice.endDate|date:"m/d/y"}}</td>
+              </tr>
+              <tr>
+                <td>Order Count</td>
+                <td>{invoiceDetails.items.map(it => it.orderNo).filter((val, i, arr) => arr.indexOf(val) === i).length}</td>
+              </tr>
+              <tr>
+                <td>Item Count</td>
+                <td>{{items|length}}</td>
+              </tr>
+              <tr>
+                <td>Invoice Total</td>
+                <td>$ {{invoice.total}}</td>
+              </tr>
+              </table>
+            </div>
+          </td>
+          <td></td>
+        </tr>
+      </table>
+            
+      <table style=" width:800px; ; border-collapse:collapse; text-align:left; margin-top:10px; margin-bottom:20px">
+        <tr style=" border-bottom: 1px solid rgb(47,83,148)">
+          <th style="text-align:left">Ship Date</th>
+          <th style="text-align:left">Order Date</th>
+          <th style="text-align:left">Order Number</th>
+          <th style="text-align:left">Customer</th>
+          <th style="text-align:left">Description</th>
+          <th style="text-align:right">Amount</th>
+        </tr>
+        {% for i in items %}
+          <tr>
+            <td>{{i.shipDate|date:"m/d/y"}}</td>
+            <td>{{i.orderDate|date:"m/d/y"}}</td>
+            <td>{{i.orderNo}}</td>
+            <td>{{i.customer}}</td>
+            <td>{{i.description}}</td>
+            <td style="text-align:right">$ {{i.amount}}</td>
+          </tr>
+        {% endfor %}
+        <tr style=" font-weight:bold; border-top:1px solid rgb(47,83,149)">
+          <td></td><td></td><td></td><td></td>
+          <td style="text-align:right">Subtotal</td>
+          <td style="text-align:right">$ {{invoice.subTotal}}</td>
+        </tr>
+        <tr style="font-weight:bold">
+          <td></td><td></td><td></td><td></td>
+          <td style="text-align:right">Discount</td>
+          <td style="text-align:right">$ {{invoice.discount}}</td>
+        </tr>
+        <tr style="font-weight:bold">
+          <td></td><td></td><td></td><td></td>
+          <td style="text-align:right">Tax Rate</td>
+          <td style="text-align:right">{{invoice.taxrate}}</td>
+        </tr>
+        <tr style="font-weight:bold">
+          <td></td><td></td><td></td><td></td>
+          <td style="text-align:right">Tax</td>
+          <td style="text-align:right">$ 23</td>
+        </tr>
+        <tr style="font-weight:bold">
+          <td></td><td></td><td></td><td></td>
+          <td style="text-align:right">Total</td>
+          <td style="text-align:right">$ {{invoice.total}}</td>
+        </tr>
+      </table>
+    </div>
+    </body>
+</html>

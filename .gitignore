@@ -1,7 +1,9 @@
 venv
 staticfiles
+media
 .vscode/*
 .idea/*
+.env
 accounts/__pycache__/
 accounts/migrations/__pycache__/
 events/__pycache__/

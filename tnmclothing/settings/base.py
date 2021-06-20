@@ -11,25 +11,13 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
-from dj_database_url import parse as dburl
-import logging.config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', cast=bool)
-
-ALLOWED_HOSTS = ['sfm-dropshipping.herokuapp.com', '127.0.0.1', 'localhost', 'api.sfmdropship.com']
-
 
 # Application definition
 
@@ -66,12 +54,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "https://sparshsing.github.io",
-    "http://localhost:3000",
-    "https://sfmdropship.com",
-]
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
@@ -103,14 +85,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'tnmclothing.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-default_dburl = 'sqlite:///' + str(BASE_DIR.joinpath('db.sqlite3'))
-
-DATABASES = {
-    'default': config('DATABASE_URL', default=default_dburl, cast=dburl)
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -139,14 +113,7 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR.joinpath('media')
 
 
 # Default primary key field type
@@ -178,3 +145,5 @@ LOGGING = {
         }
     }
 }
+
+
