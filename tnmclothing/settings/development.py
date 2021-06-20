@@ -34,4 +34,4 @@ STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.joinpath('media')
 
-FRONTEND_URL = "localhost:3000/tnm-app/"
+FRONTEND_URL = "http://localhost:3000/tnm-app/"

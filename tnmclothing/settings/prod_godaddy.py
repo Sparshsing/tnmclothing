@@ -24,9 +24,10 @@ DATABASES = {
     'default': config('DATABASE_URL', default=default_dburl, cast=dburl)
 }
 
-DATABASES['default']['ENGINE'] = 'mysql.connector.django'
-options_dict = {'autocommit': True}
-DATABASES['default']['OPTIONS'] = options_dict
+if DATABASES['default']['ENGINE']!='django.db.backends.sqlite3':
+    DATABASES['default']['ENGINE'] = 'mysql.connector.django'
+    options_dict = {'autocommit': True}
+    DATABASES['default']['OPTIONS'] = options_dict
 
 print(DATABASES)
 

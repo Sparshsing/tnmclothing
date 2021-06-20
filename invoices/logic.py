@@ -60,6 +60,7 @@ def updateInvoices(invoice_amounts):
     for invoice in invoices:
         invoice.subTotal = invoice_amounts[invoice.invoiceNo]
         invoice.save()
+        generatepdf(invoice.id)
 
 def generatepdf(id):
     invoice = Invoice.objects.get(id=id)

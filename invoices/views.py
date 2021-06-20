@@ -55,7 +55,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         logger.info(self.request.user.username + ' updated Invoice ' + str(serializer.data['invoiceNo']))
 
     @action(detail=False, methods=['POST'])
-    def generate_invoices(request):
+    def generate_invoices(self, request, pk=None):
         errors = []
         startDate = None
         endDate = None
