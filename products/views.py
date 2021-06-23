@@ -67,9 +67,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             print(e)
 
     def perform_update(self, serializer):
+        serializer.save()
         logger.info(
             self.request.user.username + ' updated product ' + serializer.data['sfmId'])
-        serializer.save()
 
     @action(detail=False, methods=['POST'])
     def import_file(self, request, pk=None):
