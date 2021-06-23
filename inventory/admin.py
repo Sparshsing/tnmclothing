@@ -4,5 +4,5 @@ from .models import Inventory
 
 @admin.register(Inventory)
 class InventoryAdmin(admin.ModelAdmin):
-    list_display = ['sfmId', 'style', 'size', 'color', 'inStock']
+    list_display = ['sfmId', 'style', 'size', 'color', 'inStock', 'productAvailability']
     search_fields = ['sfmId', 'style', 'size', 'color', 'inStock']

@@ -5,7 +5,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('id', 'sfmId', 'style', 'size', 'color', 'sku', 'cost', 'price', 'amountInStock')
+        fields = ('id', 'sfmId', 'style', 'size', 'color', 'sku', 'price', 'amountInStock')
         read_only_fields = ['sfmId', 'amountInStock']
 
 # class ProductUpdateSerializer(serializers.ModelSerializer):

@@ -19,7 +19,6 @@ class Utilities:
         # renaming columns to avoid problems with Case and spaces
         newNames = {col: col.strip().replace(' ', '').lower() for col in columnNames}
         data.rename(columns=newNames, inplace=True)
-        data['cost'].astype('float64')
         data['price'].astype('float64')
         print(newNames)
         print(data.dtypes)
@@ -33,7 +32,6 @@ class Utilities:
                 product.size = '' if pd.isna(row['size']) else str(row['size']).strip()
                 product.color = '' if pd.isna(row['color']) else str(row['color']).strip()
                 product.sku = '' if pd.isna(row['sku']) else str(row['sku']).strip()
-                product.cost = None if pd.isna(row['cost']) else float(row['cost'])
                 product.price = None if pd.isna(row['price']) else float(row['price'])
                 product.sfmId = product.style + '-' + product.size + '-' + product.color
                 product.save()

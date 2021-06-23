@@ -71,15 +71,15 @@ class ImportFiles:
             print(row)
 
             try:
-                orders = Order.objects.filter(orderNo=str(row['ordernumber']))
+                orders = Order.objects.filter(orderNo=str(row['ordernumber']).strip())
                 if orders.first() is None:
                     raise Exception('order does not exist')
                 for order in orders:
                     order.buyerEmail = '' if pd.isna(row['emailaddress']) else str(row['emailaddress']).strip()
                     order.customerPaidShipping = None if pd.isna(row['totalshippingcost']) else float(row['totalshippingcost'])
                     order.trackingNumber = '' if pd.isna(row['trackingnumber']) else str(row['trackingnumber']).strip()
-                    order.orderStatus = 'Shipped'
-                    order.shipDate = datetime.utcnow()
+                    # order.orderStatus = 'Shipped'
+                    # order.shipDate = datetime.utcnow()
                     order.save()
             except Exception as e:
                 errors.append('error row ' + str(index+2) + ': ' + str(e))

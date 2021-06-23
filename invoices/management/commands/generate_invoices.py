@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from invoices.models import Invoice
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from invoices import logic
 
 class Command(BaseCommand):
@@ -18,5 +18,7 @@ class Command(BaseCommand):
             count = logic.create_invoices(startDate, endDate)
         except Exception as err:
             raise CommandError('Error creating invoices for ' + dates + '' + str(err)[0:50])
-
+        file1 = open("invoicelogs.txt", "a")  # append mode
+        file1.write(str(datetime.now()) + " created invoices for " + str(count) + dates + "\n")
+        file1.close()
         self.stdout.write(self.style.SUCCESS('Successfully created %i invoices for "%s"' % (count, dates)))

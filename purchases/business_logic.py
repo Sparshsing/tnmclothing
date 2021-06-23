@@ -25,7 +25,7 @@ class Utilities:
     def create_product_inventory(purchase):
         prod = Product.objects.filter(sfmId=purchase.sfmId).first()
         if prod is None:
-            new_Product = Product(sfmId=purchase.sfmId, style=purchase.style, size=purchase.size, color=purchase.color, cost=0.0, price=0.0)
+            new_Product = Product(sfmId=purchase.sfmId, style=purchase.style, size=purchase.size, color=purchase.color, price=0.0)
             new_Product.save()
         inv = Inventory.objects.filter(sfmId=purchase.sfmId).first()
         # if inventory exists return else create inventory
