@@ -17,6 +17,6 @@ class Command(BaseCommand):
         try:
             count = logic.create_invoices(startDate, endDate)
         except Exception as err:
-            raise CommandError('Error creating invoices for ' + dates + '' + err)
+            raise CommandError('Error creating invoices for ' + dates + '' + str(err)[0:50])
 
         self.stdout.write(self.style.SUCCESS('Successfully created %i invoices for "%s"' % (count, dates)))

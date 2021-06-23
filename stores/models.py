@@ -17,7 +17,10 @@ class Store(models.Model):
 
     @property
     def userFullName(self):
-        return str(self.user.last_name + " " + self.user.first_name)
+        if self.user:
+            return str(self.user.last_name + " " + self.user.first_name)
+        else:
+            return str('')
 
     def __str__(self):
         return self.storeName
