@@ -1,9 +1,21 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <style>
+      body {
+      font-family: Arial, san-serif, Times New Roman
+      }
+    </style>
+
+  </head>
     <body>
         <div>
       <table style="width:800px">
         <tr>
-          <td><h1 style="color:rgb(47,83,149)">Invoice</h1></td>
+          <td><p style="color:rgb(47,83,149); font-size: 4rem">INVOICE</p></td>
           <td></td>
         </tr>
         <tr><td></td><td></td></tr>
@@ -56,11 +68,11 @@
               </tr>
               <tr>
                 <td>Order Count</td>
-                <td>{invoiceDetails.items.map(it => it.orderNo).filter((val, i, arr) => arr.indexOf(val) === i).length}</td>
+                <td>{{ordercount}}</td>
               </tr>
               <tr>
                 <td>Item Count</td>
-                <td>{{items|length}}</td>
+                <td>{{itemcount}}</td>
               </tr>
               <tr>
                 <td>Invoice Total</td>
@@ -71,10 +83,11 @@
           </td>
           <td></td>
         </tr>
+        <tr><td></td><td></td></tr>
       </table>
-            
-      <table style=" width:800px; ; border-collapse:collapse; text-align:left; margin-top:10px; margin-bottom:20px">
-        <tr style=" border-bottom: 1px solid rgb(47,83,148)">
+      <br />
+      <table class="itemlist" style=" width:800px; ; border-collapse:collapse; text-align:left; margin-top:10px; margin-bottom:20px">
+        <tr style=" border-bottom: 1px solid rgb(47,83,148); margin-bottom: 5px">
           <th style="text-align:left">Ship Date</th>
           <th style="text-align:left">Order Date</th>
           <th style="text-align:left">Order Number</th>
@@ -84,15 +97,15 @@
         </tr>
         {% for i in items %}
           <tr>
-            <td>{{i.shipDate|date:"m/d/y"}}</td>
-            <td>{{i.orderDate|date:"m/d/y"}}</td>
-            <td>{{i.orderNo}}</td>
-            <td>{{i.customer}}</td>
-            <td>{{i.description}}</td>
-            <td style="text-align:right">$ {{i.amount}}</td>
+            <td style="width: 70px; padding-top: 5px">{{i.shipDate|date:"m/d/y"}}</td>
+            <td style="width: 70px; padding-top: 5px">{{i.orderDate|date:"m/d/y"}}</td>
+            <td style="width: 80px; padding-top: 5px">{{i.orderNo}}</td>
+            <td style="width: 150px; padding-top: 5px; white-space: nowrap; overflow: hidden">{{i.customer}}</td>
+            <td style="padding-top: 5px; white-space: nowrap; overflow: hidden">{{i.description}}</td>
+            <td style="text-align:right; width: 60px; padding-top: 5px">$ {{i.amount}}</td>
           </tr>
         {% endfor %}
-        <tr style=" font-weight:bold; border-top:1px solid rgb(47,83,149)">
+        <tr style=" font-weight:bold; border-top:1px solid rgb(47,83,149); padding-top: 5px">
           <td></td><td></td><td></td><td></td>
           <td style="text-align:right">Subtotal</td>
           <td style="text-align:right">$ {{invoice.subTotal}}</td>
@@ -110,9 +123,9 @@
         <tr style="font-weight:bold">
           <td></td><td></td><td></td><td></td>
           <td style="text-align:right">Tax</td>
-          <td style="text-align:right">$ 23</td>
+          <td style="text-align:right">$ {{taxamount}}</td>
         </tr>
-        <tr style="font-weight:bold">
+        <tr style="font-weight:bold; padding-top: 5px">
           <td></td><td></td><td></td><td></td>
           <td style="text-align:right">Total</td>
           <td style="text-align:right">$ {{invoice.total}}</td>

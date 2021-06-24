@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.template.loader import get_template
 
 from orders.models import Order
@@ -65,8 +67,12 @@ def updateInvoices(invoice_amounts):
 def generatepdf(id):
     invoice = Invoice.objects.get(id=id)
     items = InvoiceItems.objects.filter(invoice=invoice)
+    items = [item for item in items]
+    itemcount = len([item for item in items if item.description!='Shipping'])
+    ordercount = len({item.orderNo for item in items})
     store = Store.objects.filter(storeCode=invoice.store.storeCode).first()
-    context = {"invoice": invoice, "items": items, "store": store}
+    taxamount = round((invoice.subTotal - invoice.discount) * invoice.taxrate * Decimal(0.01), 2)
+    context = {"invoice": invoice, "items": items, "store": store, "itemcount": itemcount, "ordercount": ordercount, "taxamount": taxamount}
     template_path = 'invoiceDetails.html'
     template = get_template(template_path)
     html = template.render(context)

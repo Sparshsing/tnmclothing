@@ -61,10 +61,24 @@ class ImportFiles:
     def import_shippingDetails(data):
 
         errors = []
+        msg = 'Successfully imported all records'
+        failed = False
         columnNames = list(data)
         newNames = {col: col.strip().replace(' ', '').lower() for col in columnNames}
         data.rename(columns=newNames, inplace=True)
-        data['totalshippingcost'].astype('float64')
+        columns_needed = {'store', 'totalshippingcost', 'emailaddress', 'trackingnumber', 'ordernumber'}
+        columns_available = set(newNames.values())
+        missing = columns_needed.difference(columns_available)
+        if len(missing) > 0:
+            msg = 'Please make sure these columns are present in import file: Store, Order Number, Email Address, Total Shipping Cost, Tracking Number'
+            failed = True
+            return errors, msg, failed
+        try:
+            data['totalshippingcost'].astype('float64')
+        except Exception as err:
+            msg = 'Please make sure cost column has decimal numbers or empty values'
+            failed = True
+            return errors, msg, failed
         print(newNames)
         print(data.dtypes, len(data.index))
         for index, row in data.iterrows():
@@ -83,7 +97,8 @@ class ImportFiles:
                     order.save()
             except Exception as e:
                 errors.append('error row ' + str(index+2) + ': ' + str(e))
-
-        return errors
+        if len(errors) > 0:
+            msg = 'Some records were not imported'
+        return errors, msg, failed
 
 

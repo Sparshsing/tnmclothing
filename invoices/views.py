@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -18,10 +20,14 @@ logger = logging.getLogger('db')
 def invoice_pdf_view(request, id, *args):
     invoice = get_object_or_404(Invoice, id=id)
     items = InvoiceItems.objects.filter(invoice=invoice)
+    items = [item for item in items]
+    itemcount = len([item for item in items if item.description != 'Shipping'])
+    ordercount = len({item.orderNo for item in items})
     store = Store.objects.filter(storeCode=invoice.store.storeCode).first()
-    context = {"invoice": invoice, "items": items, "store": store}
+    taxamount = round((invoice.subTotal - invoice.discount) * invoice.taxrate * Decimal(0.01), 2)
+    context = {"invoice": invoice, "items": items, "store": store, "itemcount": itemcount, "ordercount": ordercount, "taxamount": taxamount}
 
-    generatepdf(id)
+    # generatepdf(id)
     return render(request, 'invoiceDetails.html', context)
 
 
