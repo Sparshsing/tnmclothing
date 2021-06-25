@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
   <head>
     <meta charset="UTF-8">
@@ -13,10 +14,11 @@
   </head>
     <body>
         <div>
-      <table style="width:800px">
+      <table>
         <tr>
-          <td><p style="color:rgb(47,83,149); font-size: 4rem">INVOICE</p></td>
+          <td style="vertical-align:bottom;"><p style="color:rgb(47,83,149); margin: 10px; font-size: 6rem">INVOICE</p></td>
           <td></td>
+          <td><img src={{logourl}} alt='SFM' height="100px" ></img></td>
         </tr>
         <tr><td></td><td></td></tr>
         <tr>
@@ -29,11 +31,13 @@
           <td style=" vertical-align:top">
             <div>
               <h4 style=" color:rgb(47,83,149)">SFM Dropshipping</h4>
-              <p>My company address line 1</p>
-              <p>My company address line 2</p>
-              <p>My company address line 3</p>
-              <p>sfmdropshipping@gmail.com</p>
-              <p>9988776655</p>
+              <table>
+              <tr><td>My company address line 1</td></tr>
+              <tr><td>My company address line 2</td></tr>
+              <tr><td>My company address line 3</td></tr>
+              <tr><td>sfmdropshipping@gmail.com</td></tr>
+              <tr><td>9988776655</td></tr>
+              </table>
             </div>
           </td>
           <td></td>
@@ -87,13 +91,13 @@
       </table>
       <br />
       <table class="itemlist" style=" width:800px; ; border-collapse:collapse; text-align:left; margin-top:10px; margin-bottom:20px">
-        <tr style=" border-bottom: 1px solid rgb(47,83,148); margin-bottom: 5px">
-          <th style="text-align:left">Ship Date</th>
-          <th style="text-align:left">Order Date</th>
-          <th style="text-align:left">Order Number</th>
-          <th style="text-align:left">Customer</th>
-          <th style="text-align:left">Description</th>
-          <th style="text-align:right">Amount</th>
+        <tr style=" margin-bottom: 5px; margin-top: 5px; color: white; background: rgb(47,83,148)">
+          <th style="text-align:left;">Ship Date</th>
+          <th style="text-align:left; vertical-align: middle">Order Date</th>
+          <th style="text-align:left; vertical-align: middle">Order Number</th>
+          <th style="text-align:left; vertical-align: middle">Customer</th>
+          <th style="text-align:left; vertical-align: middle">Description</th>
+          <th style="text-align:right; vertical-align: middle">Amount</th>
         </tr>
         {% for i in items %}
           <tr>

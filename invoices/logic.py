@@ -9,6 +9,9 @@ from stores.models import Store
 from datetime import datetime, date
 from xhtml2pdf import pisa
 from django.conf import settings
+import os
+from django.contrib.staticfiles import finders
+
 
 def create_invoices(startDate, endDate):
     startdatetime = datetime(startDate.year, startDate.month, startDate.day)
@@ -64,7 +67,41 @@ def updateInvoices(invoice_amounts):
         invoice.save()
         generatepdf(invoice.id)
 
+def link_callback(uri, rel):
+    """
+    Convert HTML URIs to absolute system paths so xhtml2pdf can access those
+    resources
+    """
+    result = finders.find(uri)
+    if result:
+        if not isinstance(result, (list, tuple)):
+            result = [result]
+        result = list(os.path.realpath(path) for path in result)
+        path = result[0]
+    else:
+        sUrl = settings.STATIC_URL  # Typically /static/
+        sRoot = settings.STATIC_ROOT  # Typically /home/userX/project_static/
+        mUrl = settings.MEDIA_URL  # Typically /media/
+        mRoot = settings.MEDIA_ROOT  # Typically /home/userX/project_static/media/
+
+        if uri.startswith(mUrl):
+            path = os.path.join(mRoot, uri.replace(mUrl, ""))
+        elif uri.startswith(sUrl):
+            path = os.path.join(sRoot, uri.replace(sUrl, ""))
+        else:
+            return uri
+
+    # make sure that file exists
+    if not os.path.isfile(path):
+        raise Exception(
+            'media URI must start with %s or %s' % (sUrl, mUrl)
+        )
+    return path
+
+
 def generatepdf(id):
+    # current_site = Site.objects.get_current()
+    # print('cur site ', current_site)
     invoice = Invoice.objects.get(id=id)
     items = InvoiceItems.objects.filter(invoice=invoice)
     items = [item for item in items]
@@ -72,18 +109,19 @@ def generatepdf(id):
     ordercount = len({item.orderNo for item in items})
     store = Store.objects.filter(storeCode=invoice.store.storeCode).first()
     taxamount = round((invoice.subTotal - invoice.discount) * invoice.taxrate * Decimal(0.01), 2)
-    context = {"invoice": invoice, "items": items, "store": store, "itemcount": itemcount, "ordercount": ordercount, "taxamount": taxamount}
+    logourl = settings.BACKEND_URL + "/static/logosfm2.jpg"
+    context = {"invoice": invoice, "items": items, "store": store, "itemcount": itemcount, "ordercount": ordercount, "taxamount": taxamount, "logourl": logourl}
     template_path = 'invoiceDetails.html'
     template = get_template(template_path)
     html = template.render(context)
-
+    print(html)
     # create a pdf
     media_root = settings.MEDIA_ROOT
     output_filename = invoice.invoiceNo + '.pdf'
     output_filepath = media_root.joinpath('invoicepdfs').joinpath(output_filename)
     result_file = open(output_filepath, "w+b")
     pisa_status = pisa.CreatePDF(
-        html, dest=result_file)
+        html, dest=result_file, link_callback=link_callback)
     result_file.close()
 
     if pisa_status.err:

@@ -41,3 +41,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.parent.joinpath('public_html/api.sfmdropship.com/media/')
 
 FRONTEND_URL = "https://sfmdropship.com"
+
+BACKEND_URL = "https://api.sfmdropship.com"

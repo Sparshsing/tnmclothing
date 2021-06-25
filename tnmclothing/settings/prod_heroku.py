@@ -36,3 +36,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.joinpath('media')
 
 FRONTEND_URL = "https://sparshsing.github.io/tnm-app"
+
+BACKEND_URL = "https://sfm-dropshipping.herokuapp.com"

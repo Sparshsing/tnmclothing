@@ -1,5 +1,5 @@
 from decimal import Decimal
-
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -25,7 +25,9 @@ def invoice_pdf_view(request, id, *args):
     ordercount = len({item.orderNo for item in items})
     store = Store.objects.filter(storeCode=invoice.store.storeCode).first()
     taxamount = round((invoice.subTotal - invoice.discount) * invoice.taxrate * Decimal(0.01), 2)
-    context = {"invoice": invoice, "items": items, "store": store, "itemcount": itemcount, "ordercount": ordercount, "taxamount": taxamount}
+    logourl = settings.BACKEND_URL + "/static/logosfm2.jpg"
+    context = {"invoice": invoice, "items": items, "store": store, "itemcount": itemcount, "ordercount": ordercount,
+               "taxamount": taxamount, "logourl": logourl}
 
     # generatepdf(id)
     return render(request, 'invoiceDetails.html', context)
