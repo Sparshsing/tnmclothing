@@ -162,7 +162,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             logger.info(request.user.username + ' imported orders file ' + str(myfile.name))
         else:
             errorstring = ','.join(errors)
-            errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
+            # errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
             logger.exception(
                 request.user.username + ' imported orders file ' + str(myfile.name) + ' with errors ' + errorstring)
         return Response({'errors': errors})
@@ -189,7 +189,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             logger.info(request.user.username + ' imported shipping file ' + str(myfile.name) + ' Successfully')
         else:
             errorstring = ','.join(errors)
-            errorstring = errorstring[:500] + '...' if len(errorstring) > 500 else errorstring
+            # errorstring = errorstring[:500] + '...' if len(errorstring) > 500 else errorstring
             logger.exception(request.user.username + ' imported shipping file ' + str(myfile.name) + ' with errors ' + errorstring)
         return Response({'errors': errors, 'msg': msg})
 

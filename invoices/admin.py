@@ -25,7 +25,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         ) % count, messages.SUCCESS)
 
 @admin.register(InvoiceItems)
-class InvoiceItemseAdmin(admin.ModelAdmin):
+class InvoiceItemsAdmin(admin.ModelAdmin):
     list_display = ['id', 'invoice', 'shipDate', 'orderDate', 'orderNo', 'customer', 'description', 'amount']
     search_fields = ['id', 'invoice__invoiceNo', 'shipDate', 'orderDate', 'orderNo', 'customer', 'description', 'amount']
     list_per_page = 50

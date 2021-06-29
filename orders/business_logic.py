@@ -66,21 +66,20 @@ class ImportFiles:
         columnNames = list(data)
         newNames = {col: col.strip().replace(' ', '').lower() for col in columnNames}
         data.rename(columns=newNames, inplace=True)
-        columns_needed = {'store', 'totalshippingcost', 'emailaddress', 'trackingnumber', 'ordernumber'}
+        columns_needed = {'store', 'postagecost', 'emailaddress', 'trackingnumber', 'ordernumber'}
         columns_available = set(newNames.values())
         missing = columns_needed.difference(columns_available)
         if len(missing) > 0:
-            msg = 'Please make sure these columns are present in import file: Store, Order Number, Email Address, Total Shipping Cost, Tracking Number'
+            msg = 'Please make sure these columns are present in import file: Store, Order Number, Email Address, Postage Cost, Tracking Number'
             failed = True
             return errors, msg, failed
         try:
-            data['totalshippingcost'].astype('float64')
+            data['postagecost'].astype('float64')
         except Exception as err:
             msg = 'Please make sure cost column has decimal numbers or empty values'
             failed = True
             return errors, msg, failed
         print(newNames)
-        print(data.dtypes, len(data.index))
         for index, row in data.iterrows():
             print(row)
 
@@ -90,7 +89,7 @@ class ImportFiles:
                     raise Exception('order does not exist')
                 for order in orders:
                     order.buyerEmail = '' if pd.isna(row['emailaddress']) else str(row['emailaddress']).strip()
-                    order.customerPaidShipping = None if pd.isna(row['totalshippingcost']) else float(row['totalshippingcost'])
+                    order.customerPaidShipping = None if pd.isna(row['postagecost']) else float(row['postagecost'])
                     order.trackingNumber = '' if pd.isna(row['trackingnumber']) else str(row['trackingnumber']).strip()
                     # order.orderStatus = 'Shipped'
                     # order.shipDate = datetime.utcnow()

@@ -6,16 +6,24 @@ from orders.models import Order
 from products.models import Product
 from invoices.models import Invoice, InvoiceItems
 from stores.models import Store
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from xhtml2pdf import pisa
 from django.conf import settings
 import os
 from django.contrib.staticfiles import finders
+import logging
+
+
+# Get an instance of a logger
+logger = logging.getLogger('db')
 
 
 def create_invoices(startDate, endDate):
     startdatetime = datetime(startDate.year, startDate.month, startDate.day)
-    enddatetime = datetime(endDate.year, endDate.month, endDate.day+1)
+    enddatetime = datetime(endDate.year, endDate.month, endDate.day)
+
+    # because sql will check on 0:00 am on end date, if shipdate was 7pm on enddate, it will not be included
+    enddatetime = enddatetime + timedelta(days=1)
 
     # startdatetime = datetime.combine(startDate, datetime.min.time())
     # enddatetime = datetime.combine(endDate, datetime.max.time())
@@ -23,40 +31,51 @@ def create_invoices(startDate, endDate):
     invoice_amounts = {}
     orderNoList = []
 
+    if len(shipped_orders) == 0:
+        logger.exception(
+            ' admin or system tried generated invoice for ' + str(startDate) + ' to ' + str(endDate) + ', But no shipped order during these days.')
+        return 0
+
     for order in shipped_orders:
-        invoiceno = "SFMINV-" + startDate.strftime("%m%d") + "-" + endDate.strftime("%m%d") \
-                    + "-" + order.store.storeCode
-        if invoiceno not in list(invoice_amounts.keys()):
-            print('adding store', order.storeName)
+        try:
+            invoiceno = "SFMINV-" + startDate.strftime("%m%d") + "-" + endDate.strftime("%m%d") \
+                        + "-" + order.store.storeCode
+            if invoiceno not in list(invoice_amounts.keys()):
+                print('adding invoice for store', order.storeName)
 
-            invoicenote = "invoice from SFM"
-            # check if the invoice already exists, if so delete the invoice and create new
-            Invoice.objects.filter(invoiceNo=invoiceno).delete()
-            invoice = Invoice(startDate=startDate, endDate=endDate, storeName=order.storeName, store=order.store, invoiceNo=invoiceno,
-                              status="Unpaid", notes=invoicenote, subTotal=0, discount=0, taxrate=0)
-            invoice.save()
-            invoice_amounts[invoiceno] = 0
+                invoicenote = "invoice from SFM"
+                # check if the invoice already exists, if so delete the invoice and create new
+                Invoice.objects.filter(invoiceNo=invoiceno).delete()
+                invoice = Invoice(startDate=startDate, endDate=endDate, storeName=order.storeName, store=order.store, invoiceNo=invoiceno,
+                                  status="Unpaid", notes=invoicenote, subTotal=0, discount=0, taxrate=0)
+                invoice.save()
+                invoice_amounts[invoiceno] = 0
 
-        print(order.saleDate)
-        orderdate = order.saleDate if order.saleDate is not None else order.shipDate.date()
-        invoice = Invoice.objects.get(invoiceNo=invoiceno)
-        if order.customerPaidShipping is not None and order.customerPaidShipping > 0 and order.orderNo not in orderNoList:
-            invoiceshipitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
-                                           orderNo=order.orderNo, customer=order.recipientName, description='Shipping',
-                                           amount=order.customerPaidShipping)
-            invoiceshipitem.save()
-            invoice_amounts[invoiceno] += order.customerPaidShipping
-        orderNoList.append(order.orderNo)
-        product = Product.objects.get(sfmId=order.sfmId)
-        amt = product.price
-        desc = order.sfmId + '-' + order.design
-        invoiceitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
-                                   orderNo=order.orderNo, customer=order.recipientName, description=desc,
-                                   amount=amt)
-        invoiceitem.save()
-        invoice_amounts[invoiceno] += amt
+            print(order.saleDate)
+            orderdate = order.saleDate if order.saleDate is not None else order.shipDate.date()
+            invoice = Invoice.objects.get(invoiceNo=invoiceno)
+            if order.customerPaidShipping is not None and order.customerPaidShipping > 0 and order.orderNo not in orderNoList:
+                invoiceshipitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
+                                               orderNo=order.orderNo, customer=order.recipientName, description='Shipping',
+                                               amount=order.customerPaidShipping)
+                invoiceshipitem.save()
+                invoice_amounts[invoiceno] += order.customerPaidShipping
+            orderNoList.append(order.orderNo)
+            product = Product.objects.get(sfmId=order.sfmId)
+            amt = product.price
+            desc = order.sfmId + '-' + order.design
+            invoiceitem = InvoiceItems(invoice=invoice, shipDate=order.shipDate.date(), orderDate=orderdate,
+                                       orderNo=order.orderNo, customer=order.recipientName, description=desc,
+                                       amount=amt)
+            invoiceitem.save()
+            invoice_amounts[invoiceno] += amt
+        except Exception as err:
+            print('error ----', str(err))
+            logger.exception('Error in invoice ' + invoiceno + ', item for order ' + order.sfmId + ', Aborting... details: ' + str(err))
+            raise Exception('Error generating invoice')
 
 
+    logger.info(' admin or system generated invoice for ' + str(startDate) + ' to ' + str(endDate) + ' , count: ' + len(invoice_amounts))
     updateInvoices(invoice_amounts)
     return len(invoice_amounts)
 
@@ -65,7 +84,11 @@ def updateInvoices(invoice_amounts):
     for invoice in invoices:
         invoice.subTotal = invoice_amounts[invoice.invoiceNo]
         invoice.save()
-        generatepdf(invoice.id)
+        try:
+            generatepdf(invoice.id)
+        except Exception as err:
+            print('Error generating pdf for invoice ' + invoice.invoiceNo, str(err))
+            logger.exception('Error generating pdf for invoice ' + invoice.invoiceNo + ', details: ' + str(err))
 
 def link_callback(uri, rel):
     """

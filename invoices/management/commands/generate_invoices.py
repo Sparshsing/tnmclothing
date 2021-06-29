@@ -11,6 +11,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         days = date.today().isoweekday()
+        if days == 7:
+            days = 0
         endDate = date.today() - timedelta(days=days + 1)
         startDate = date.today() - timedelta(days=days + 1) - timedelta(days=6)
         dates = str(startDate) + ' to ' + str(endDate)
