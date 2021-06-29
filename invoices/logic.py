@@ -131,13 +131,13 @@ def generatepdf(id):
     itemcount = len([item for item in items if item.description!='Shipping'])
     ordercount = len({item.orderNo for item in items})
     store = Store.objects.filter(storeCode=invoice.store.storeCode).first()
-    taxamount = round((invoice.subTotal - invoice.discount) * invoice.taxrate * Decimal(0.01), 2)
+    afterdiscount = invoice.subTotal - invoice.discount
+    taxamount = round(afterdiscount * invoice.taxrate * Decimal(0.01), 2)
     logourl = settings.BACKEND_URL + "/static/logosfm2.jpg"
-    context = {"invoice": invoice, "items": items, "store": store, "itemcount": itemcount, "ordercount": ordercount, "taxamount": taxamount, "logourl": logourl}
+    context = {"invoice": invoice, "items": items, "store": store, "itemcount": itemcount, "ordercount": ordercount, "afterdiscount": afterdiscount, "taxamount": taxamount, "logourl": logourl}
     template_path = 'invoiceDetails.html'
     template = get_template(template_path)
     html = template.render(context)
-    print(html)
     # create a pdf
     media_root = settings.MEDIA_ROOT
     output_filename = invoice.invoiceNo + '.pdf'

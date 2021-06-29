@@ -16,7 +16,7 @@
         <div>
       <table>
         <tr>
-          <td style="vertical-align:bottom;"><p style="color:rgb(47,83,149); margin: 10px; font-size: 6rem">INVOICE</p></td>
+          <td><p style="color:rgb(47,83,149); margin: 10px; font-size: 6rem">INVOICE</p></td>
           <td></td>
           <td><img src={{logourl}} alt='SFM' height="100px" ></img></td>
         </tr>
@@ -91,13 +91,13 @@
       </table>
       <br />
       <table class="itemlist" style=" width:800px; ; border-collapse:collapse; text-align:left; margin-top:10px; margin-bottom:20px">
-        <tr style=" margin-bottom: 5px; margin-top: 5px; color: white; background: rgb(47,83,148)">
-          <th style="text-align:left;">Ship Date</th>
-          <th style="text-align:left; vertical-align: middle">Order Date</th>
-          <th style="text-align:left; vertical-align: middle">Order Number</th>
-          <th style="text-align:left; vertical-align: middle">Customer</th>
-          <th style="text-align:left; vertical-align: middle">Description</th>
-          <th style="text-align:right; vertical-align: middle">Amount</th>
+        <tr style="color: white; background: rgb(47,83,148)">
+          <th style="text-align:left; padding-top:5px; padding-left:2px">Ship Date</th>
+          <th style="text-align:left; padding-top:5px">Order Date</th>
+          <th style="text-align:left; padding-top:5px">Order Number</th>
+          <th style="text-align:left; padding-top:5px">Customer</th>
+          <th style="text-align:left; padding-top:5px">Description</th>
+          <th style="text-align:right; padding-top:5px; padding-right:2px; background: rgb(204, 102, 0)">Amount</th>
         </tr>
         {% for i in items %}
           <tr>
@@ -106,33 +106,38 @@
             <td style="width: 80px; padding-top: 5px">{{i.orderNo}}</td>
             <td style="width: 150px; padding-top: 5px; white-space: nowrap; overflow: hidden">{{i.customer}}</td>
             <td style="padding-top: 5px; white-space: nowrap; overflow: hidden">{{i.description}}</td>
-            <td style="text-align:right; width: 60px; padding-top: 5px">$ {{i.amount}}</td>
+            <td style="text-align:right; width: 60px; padding-top: 5px">${{i.amount}}</td>
           </tr>
         {% endfor %}
         <tr style=" font-weight:bold; border-top:1px solid rgb(47,83,149); padding-top: 5px">
           <td></td><td></td><td></td><td></td>
           <td style="text-align:right">Subtotal</td>
-          <td style="text-align:right">$ {{invoice.subTotal}}</td>
+          <td style="text-align:right; white-space: nowrap">${{invoice.subTotal}}</td>
         </tr>
-        <tr style="font-weight:bold">
+        <tr style="font-weight:bold;">
           <td></td><td></td><td></td><td></td>
-          <td style="text-align:right">Discount</td>
-          <td style="text-align:right">$ {{invoice.discount}}</td>
+          <td style="text-align:right; border-bottom:1px solid rgb(47,83,149)">Discount</td>
+          <td style="text-align:right; border-bottom:1px solid rgb(47,83,149); white-space: nowrap">${{invoice.discount}}</td>
+        </tr>
+        <tr style="font-weight:bold; padding-top: 5px">
+          <td></td><td></td><td></td><td></td>
+          <td style="text-align:right">After Discount Total</td>
+          <td style="text-align:right; white-space: nowrap">${{afterdiscount}}</td>
         </tr>
         <tr style="font-weight:bold">
           <td></td><td></td><td></td><td></td>
           <td style="text-align:right">Tax Rate</td>
-          <td style="text-align:right">{{invoice.taxrate}}</td>
+          <td style="text-align:right; white-space: nowrap">{{invoice.taxrate}}%</td>
         </tr>
         <tr style="font-weight:bold">
           <td></td><td></td><td></td><td></td>
           <td style="text-align:right">Tax</td>
-          <td style="text-align:right">$ {{taxamount}}</td>
+          <td style="text-align:right; white-space: nowrap">${{taxamount}}</td>
         </tr>
         <tr style="font-weight:bold; padding-top: 5px">
           <td></td><td></td><td></td><td></td>
-          <td style="text-align:right">Total</td>
-          <td style="text-align:right">$ {{invoice.total}}</td>
+          <td style="text-align:right; background: rgb(47,83,148); color: white; font-size: 1.5rem">Total</td>
+          <td style="text-align:right; white-space: nowrap; background: rgb(47,83,148); color: white; font-size: 1.5rem">${{invoice.total}}</td>
         </tr>
       </table>
     </div>
