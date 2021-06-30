@@ -76,20 +76,22 @@ class PurchaseViewSet(viewsets.ModelViewSet):
         if '.csv' in myfile.name:
             data = pd.read_csv(myfile)
             print(data.head())
-            errors = Utilities.import_purchases(data)
+            errors, msg, failed = Utilities.import_purchases(data)
             print(errors)
         if '.xlsx' in myfile.name:
             data = pd.read_excel(myfile, engine='openpyxl')
             print(data.head())
-            errors = Utilities.import_purchases(data)
+            errors, msg, failed = Utilities.import_purchases(data)
             print(errors)
 
-        if len(errors) == 0:
-            logger.info(request.user.username + ' imported purchases file ' + str(myfile.name))
+        if failed:
+            logger.exception(request.user.username + ' Failed to import orders file ' + str(myfile.name) + ", error: " + msg)
+        elif len(errors) == 0:
+            logger.info(request.user.username + ' Successfully imported purchases file ' + str(myfile.name))
         else:
             errorstring = ','.join(errors)
-            errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
-            logger.exception(request.user.username + ' imported purchases file ' + str(myfile.name) + ' with errors ' + errorstring)
-        return Response({'errors': errors})
+            # errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
+            logger.exception(request.user.username + ' Imported purchases file ' + str(myfile.name) + ' with errors ' + errorstring)
+        return Response({'errors': errors, 'msg': msg})
 
 

@@ -151,21 +151,24 @@ class OrderViewSet(viewsets.ModelViewSet):
         if'.csv' in myfile.name:
             data = pd.read_csv(myfile)
             # print(data.head())
-            errors = ImportFiles.import_orders(data)
+            errors, msg, failed = ImportFiles.import_orders(data)
             print(errors)
         if '.xlsx' in myfile.name:
             data = pd.read_excel(myfile, engine='openpyxl')
             # print(data.head())
-            errors = ImportFiles.import_orders(data)
+            errors, msg, failed = ImportFiles.import_orders(data)
             print(errors)
-        if len(errors) == 0:
-            logger.info(request.user.username + ' imported orders file ' + str(myfile.name))
+
+        if failed:
+            logger.exception(request.user.username + ' Failed to import orders file ' + str(myfile.name) + ", error: " + msg)
+        elif len(errors) == 0:
+            logger.info(request.user.username + ' imported orders file ' + str(myfile.name) + ' Successfully')
         else:
             errorstring = ','.join(errors)
             # errorstring = errorstring[:200] + '...' if len(errorstring) > 200 else errorstring
             logger.exception(
-                request.user.username + ' imported orders file ' + str(myfile.name) + ' with errors ' + errorstring)
-        return Response({'errors': errors})
+                request.user.username + ' Imported orders file ' + str(myfile.name) + ' with errors ' + errorstring)
+        return Response({'errors': errors, 'msg': msg})
 
     @action(detail=False, methods=['POST'])
     def import_shippingfile(self, request, pk=None):
@@ -184,9 +187,9 @@ class OrderViewSet(viewsets.ModelViewSet):
             print(errors)
 
         if failed:
-            logger.exception(request.user.username + ' imported shipping file ' + str(myfile.name) + ", error: " + msg)
+            logger.exception(request.user.username + ' Failed to import shipping file ' + str(myfile.name) + ", error: " + msg)
         elif len(errors) == 0:
-            logger.info(request.user.username + ' imported shipping file ' + str(myfile.name) + ' Successfully')
+            logger.info(request.user.username + ' Imported shipping file ' + str(myfile.name) + ' Successfully')
         else:
             errorstring = ','.join(errors)
             # errorstring = errorstring[:500] + '...' if len(errorstring) > 500 else errorstring

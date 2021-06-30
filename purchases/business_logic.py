@@ -1,8 +1,25 @@
 from .models import Purchase
 import pandas as pd
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from products.models import Product
 from inventory.models import Inventory
+
+
+def convert_date(val):
+    """
+    Convert to datetime object if string
+    """
+
+    if isinstance(val, str):
+        try:
+            newval = datetime.strptime(str(val), '%m/%d')
+        except ValueError as err:
+            newval = datetime.strptime(str(val), '%m/%d/%Y')
+        newval = newval.replace(year=datetime.now().year)
+        print(newval, type(newval))
+        return newval
+
+    return val
 
 class Utilities:
     @staticmethod
@@ -41,8 +58,29 @@ class Utilities:
         # renaming columns to avoid problems with Case and spaces
         newNames = {col: col.strip().replace(' ', '').lower() for col in columnNames}
         data.rename(columns=newNames, inplace=True)
+        msg = ''
+        failed = False
         print(newNames)
         print(data.dtypes)
+
+        columns_needed = {'style', 'size', 'color', 'company',
+                          'warehouse', 'orderdate', 'ordered'}
+        columns_available = set(newNames.values())
+        missing = columns_needed.difference(columns_available)
+
+        if len(missing) > 0:
+            msg = "Import failed. Please make sure these columns are present in import file: 'style', 'size', 'color', 'company', 'warehouse', 'order date', 'ordered'"
+            failed = True
+            return errors, msg, failed
+
+        try:
+            data['orderdate'] = data['orderdate'].apply(convert_date)
+            data['orderdate'] = data['orderdate'].astype('datetime64')
+        except Exception as err:
+            msg = 'Import Failed. Please make sure Order Date column has dates as mm/dd/yyyy or mm/dd or empty values'
+            failed = True
+            return errors, msg, failed
+
         for index, row in data.iterrows():
             print(row)
 
@@ -64,7 +102,12 @@ class Utilities:
             except Exception as e:
                 errors.append('error row ' + str(index+2) + ': ' + str(e))
 
-        return errors
+        if len(errors) > 0:
+            msg = 'Some records were not imported'
+        else:
+            msg = 'Successfully imported all records'
+
+        return errors, msg, failed
 
 
 

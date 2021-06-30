@@ -3,6 +3,27 @@ from stores.models import Store
 from inventory.models import Inventory
 from datetime import datetime
 import pandas as pd
+import logging
+
+
+# Get an instance of a logger
+logger = logging.getLogger('db')
+
+def convert_date(val):
+    """
+    Convert to datetime object if string
+    """
+
+    if isinstance(val, str):
+        try:
+            newval = datetime.strptime(str(val), '%m/%d')
+        except ValueError as err:
+            newval = datetime.strptime(str(val), '%m/%d/%Y')
+        newval = newval.replace(year=datetime.now().year)
+        print(newval, type(newval))
+        return newval
+
+    return val
 
 class ImportFiles:
     @staticmethod
@@ -17,6 +38,27 @@ class ImportFiles:
         data.rename(columns=newNames, inplace=True)
         print(newNames)
         print(data.dtypes)
+        msg = ''
+        failed = False
+
+        columns_needed = {'store', 'saledate', 'orderno', 'recipientname', 'style', 'size', 'color', 'design', 'buyername', 'buyercomments', 'giftmessage', 'sku', 'priorityshipping'}
+        columns_available = set(newNames.values())
+        missing = columns_needed.difference(columns_available)
+
+        if len(missing) > 0:
+            msg = "Import failed. Please make sure these columns are present in import file: 'store', 'sale date', 'order no', 'recipient name', 'style', 'size', 'color', 'design', 'buyer name', 'buyer comments', 'gift message', 'sku', 'priority shipping'"
+            failed = True
+            return errors, msg, failed
+
+        try:
+            data['saledate'] = data['saledate'].apply(convert_date)
+            data['saledate'] = data['saledate'].astype('datetime64')
+        except Exception as err:
+            msg = 'Import Failed. Please make sure Sale Date column has dates as mm/dd/yyyy or mm/dd or empty values'
+            failed = True
+            logger.exception('error reading sale date column')
+            return errors, msg, failed
+
         for index, row in data.iterrows():
             # print(row)
 
@@ -55,13 +97,16 @@ class ImportFiles:
 
             except Exception as e:
                 errors.append('error row ' + str(index+2) + ': ' + str(e))
-
-        return errors
+        if len(errors) > 0:
+            msg = 'Some records were not imported'
+        else:
+            msg = 'Successfully imported all records'
+        return errors, msg, failed
 
     def import_shippingDetails(data):
 
         errors = []
-        msg = 'Successfully imported all records'
+        msg = ''
         failed = False
         columnNames = list(data)
         newNames = {col: col.strip().replace(' ', '').lower() for col in columnNames}
@@ -70,13 +115,13 @@ class ImportFiles:
         columns_available = set(newNames.values())
         missing = columns_needed.difference(columns_available)
         if len(missing) > 0:
-            msg = 'Please make sure these columns are present in import file: Store, Order Number, Email Address, Postage Cost, Tracking Number'
+            msg = 'Import failed. Please make sure these columns are present in import file: Store, Order Number, Email Address, Postage Cost, Tracking Number'
             failed = True
             return errors, msg, failed
         try:
-            data['postagecost'].astype('float64')
+            data['postagecost'] = data['postagecost'].astype('float64')
         except Exception as err:
-            msg = 'Please make sure cost column has decimal numbers or empty values'
+            msg = 'Import failed. Please make sure cost column has decimal numbers or empty values'
             failed = True
             return errors, msg, failed
         print(newNames)
@@ -98,6 +143,8 @@ class ImportFiles:
                 errors.append('error row ' + str(index+2) + ': ' + str(e))
         if len(errors) > 0:
             msg = 'Some records were not imported'
+        else:
+            msg = 'Successfully imported all records'
         return errors, msg, failed
 
 

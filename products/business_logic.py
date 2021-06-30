@@ -19,7 +19,25 @@ class Utilities:
         # renaming columns to avoid problems with Case and spaces
         newNames = {col: col.strip().replace(' ', '').lower() for col in columnNames}
         data.rename(columns=newNames, inplace=True)
-        data['price'].astype('float64')
+        msg = ''
+        failed = False
+
+        columns_needed = {'price', 'sku', 'style', 'size', 'color'}
+        columns_available = set(newNames.values())
+        missing = columns_needed.difference(columns_available)
+
+        if len(missing) > 0:
+            msg = "Import failed. Please make sure these columns are present in import file: 'price', 'sku', 'style', 'size', 'color'"
+            failed = True
+            return errors, msg, failed
+
+        try:
+            data['price'].astype('float64')
+        except Exception as err:
+            msg = 'Import Failed. Please make sure Price column has numbers or empty values'
+            failed = True
+            return errors, msg, failed
+
         print(newNames)
         print(data.dtypes)
         
@@ -39,7 +57,11 @@ class Utilities:
             except Exception as e:
                 errors.append('error row ' + str(index+2) + ': ' + str(e))
 
-        return errors
+        if len(errors) > 0:
+            msg = 'Some records were not imported'
+        else:
+            msg = 'Successfully imported all records'
+        return errors, msg, failed
 
 
 
