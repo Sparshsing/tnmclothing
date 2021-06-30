@@ -34,7 +34,7 @@ class Utilities:
         try:
             data['price'].astype('float64')
         except Exception as err:
-            msg = 'Import Failed. Please make sure Price column has numbers or empty values'
+            msg = 'Import Failed. Please make sure Price column has numbers only'
             failed = True
             return errors, msg, failed
 

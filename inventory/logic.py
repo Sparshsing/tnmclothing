@@ -29,7 +29,7 @@ class Utilities:
             data['minimum'].astype('int64')
             data['maximum'].astype('int64')
         except Exception as err:
-            msg = 'Import Failed. Please make sure in stock, minimum and maximum columns have numbers only or empty values'
+            msg = 'Import Failed. Please make sure in stock, minimum and maximum columns have numbers only'
             failed = True
             return errors, msg, failed
 
