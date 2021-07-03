@@ -1,3 +1,5 @@
+from rest_framework import pagination, filters
+
 from .models import Purchase
 from .serializers import PurchaseSerializer
 from rest_framework import viewsets
@@ -16,10 +18,19 @@ logger = logging.getLogger('db')
 
 # Create your views here.
 
+class PurchasePagination(pagination.PageNumberPagination):
+    page_size = 50
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class PurchaseViewSet(viewsets.ModelViewSet):
     serializer_class = PurchaseSerializer
     queryset = Purchase.objects.all().order_by('-id')
     authentication_classes = (TokenAuthentication,)
+    pagination_class = PurchasePagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['style', 'size', 'color', 'warehouse', 'company']
+
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

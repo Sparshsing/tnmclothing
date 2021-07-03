@@ -75,7 +75,7 @@ def create_invoices(startDate, endDate):
             raise Exception('Error generating invoice')
 
 
-    logger.info(' admin or system generated invoice for ' + str(startDate) + ' to ' + str(endDate) + ' , count: ' + len(invoice_amounts))
+    logger.info(' admin or system generated invoice for ' + str(startDate) + ' to ' + str(endDate) + ' , count: ' + str(len(invoice_amounts)))
     updateInvoices(invoice_amounts)
     return len(invoice_amounts)
 
