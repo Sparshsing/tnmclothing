@@ -2,6 +2,9 @@ from django.db import models
 from stores.models import Store
 from decimal import Decimal
 
+def receipt_path(instance, filename):
+    return 'invoicereceipts/' + instance.invoiceNo + '-' + filename
+
 # Create your models here.
 class Invoice(models.Model):
     startDate = models.DateField()
@@ -15,6 +18,7 @@ class Invoice(models.Model):
     discount = models.DecimalField(max_digits=9, decimal_places=2)
     taxrate = models.DecimalField(max_digits=4, decimal_places=2)
     attachment = models.FileField(upload_to='invoicepdfs/', null=True)
+    receipt = models.FileField(upload_to=receipt_path, null=True, blank=True)
 
     @property
     def total(self):

@@ -10,7 +10,7 @@ from datetime import datetime
 from .models import Invoice, InvoiceItems
 from .logic import create_invoices, generatepdf
 from stores.models import Store
-from .serializers import InvoiceSerializer, InvoiceDetailsSerializer
+from .serializers import InvoiceSerializer, InvoiceDetailsSerializer, ReceiptUploadSerializer
 import logging
 
 
@@ -75,3 +75,18 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             return Response({'startDate': 'required fields'}, status=status.HTTP_400_BAD_REQUEST)
         count = create_invoices(startDate, endDate)
         return Response({'errors': errors, 'count': count})
+
+    @action(detail=True, methods=['POST'])
+    def upload_receipt(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = ReceiptUploadSerializer(instance=instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(self.request.user.username + ' uploaded receipt ' + instance.invoiceNo)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            logger.exception(self.request.user.username + ' Failed to upload receipt ' + instance.invoiceNo)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+

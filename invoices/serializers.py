@@ -5,7 +5,19 @@ from stores.serializers import StoreSerializer
 class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invoice
-        fields = ('id', 'startDate', 'endDate', 'store', 'storeName', 'invoiceNo', 'status', 'notes', 'subTotal', 'discount', 'taxrate', 'total', 'attachment')
+        fields = ('id', 'startDate', 'endDate', 'store', 'storeName', 'invoiceNo', 'status', 'notes', 'subTotal', 'discount', 'taxrate', 'total', 'attachment', 'receipt')
+        read_only_fields = ['attachment', 'receipt', 'id', 'startDate', 'endDate', 'store', 'storeName', 'invoiceNo']
+
+class ReceiptUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = ['receipt']
+
+    # uncomment if you want to delete existing receipt of this invoice
+    # def save(self, *args, **kwargs):
+    #     if self.instance.receipt:
+    #         self.instance.receipt.delete()
+    #     return super().save(*args, **kwargs)
 
 class InvoiceItemsSerializer(serializers.ModelSerializer):
     class Meta:
