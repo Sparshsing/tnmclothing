@@ -6,10 +6,12 @@ from stores.models import Store
 from inventory.models import Inventory
 from .serializers import OrderSerializer
 from rest_framework import viewsets, status
+from rest_framework import pagination, filters
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import serializers
+from django.db.models import F
 import datetime
 import pandas as pd
 from .business_logic import ImportFiles
@@ -18,21 +20,26 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger('db')
 
-# Create your views here.
+class OrdersPagination(pagination.PageNumberPagination):
+    page_size = 50
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
     authentication_classes = (TokenAuthentication,)
-    # filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
-    # filterset_fields = ['orderStatus']
+    pagination_class = OrdersPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['style', 'size', 'color', 'orderStatus', 'orderNo', 'store__storeName', 'recipientName', 'design']
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        sorted_orders_qs = Order.objects.order_by(F('shipDate').desc(nulls_first=True), 'store__storeName', 'recipientName')
+        queryset = self.filter_queryset(sorted_orders_qs)
         user = request.user
         if not user.is_superuser and not user.is_staff:
             stores = Store.objects.filter(user=user)
-            queryset = self.get_queryset().filter(store__in=stores)
+            queryset = queryset.filter(store__in=stores)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

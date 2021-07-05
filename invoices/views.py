@@ -3,7 +3,7 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, pagination, filters
 from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
 from datetime import datetime
@@ -16,6 +16,11 @@ import logging
 
 # Get an instance of a logger
 logger = logging.getLogger('db')
+
+class InvoicePagination(pagination.PageNumberPagination):
+    page_size = 50
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 def invoice_pdf_view(request, id, *args):
     invoice = get_object_or_404(Invoice, id=id)
@@ -38,14 +43,18 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
     authentication_classes = (TokenAuthentication,)
+    pagination_class = InvoicePagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['invoiceNo', 'storeName', 'status']
 
     def list(self, request, *args, **kwargs):
 
-        queryset = self.get_queryset().order_by('-id')
+        sorted_queryset = Invoice.objects.all().order_by('-id')
+        queryset = self.filter_queryset(sorted_queryset)
         if not request.user.is_superuser:
             stores = Store.objects.filter(user=request.user.id)
             storenames = [s.storeName for s in stores]
-            queryset = self.get_queryset().filter(storeName__in=storenames)
+            queryset = queryset.filter(storeName__in=storenames)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
