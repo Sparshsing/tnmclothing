@@ -136,8 +136,8 @@ class ImportFiles:
                     order.buyerEmail = '' if pd.isna(row['emailaddress']) else str(row['emailaddress']).strip()
                     order.customerPaidShipping = None if pd.isna(row['postagecost']) else float(row['postagecost'])
                     order.trackingNumber = '' if pd.isna(row['trackingnumber']) else str(row['trackingnumber']).strip()
-                    # order.orderStatus = 'Shipped'
-                    # order.shipDate = datetime.utcnow()
+                    order.orderStatus = 'Shipped'
+                    order.shipDate = datetime.utcnow()
                     order.save()
             except Exception as e:
                 errors.append('error row ' + str(index+2) + ': ' + str(e))

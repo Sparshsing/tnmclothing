@@ -214,6 +214,9 @@ class OrderViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError({"store": "store cannot be empty"})
         if store == 'All':
             orders = Order.objects.all()
+            if not request.user.is_superuser and not request.user.is_staff:
+                stores = Store.objects.filter(user=request.user)
+                orders = orders.filter(store__in=stores)
         else:
             orders = Order.objects.filter(store=store)
         print(orders)
@@ -227,16 +230,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         result['total'] = orders.count()
         result['unfulfilled'] = orders.filter(orderStatus='Unfulfilled').count()
         result['onhold'] = orders.filter(orderStatus='On Hold').count()
-        result['fulfilled'] = orders.filter(orderStatus__in=['Printed', 'Shipped']).count()
+        result['fulfilled'] = orders.filter(orderStatus__in=['Processed', 'Printed', 'Shipped']).count()
         outofstock = 0
         for order in orders:
-            if order.orderStatus=='':
-                inv = Inventory.objects.filter(sfmId=order.sfmId).first()
-                if inv and inv.productAvailability=='Out Of Stock':
-                    outofstock +=1
+            inv = Inventory.objects.filter(sfmId=order.sfmId).first()
+            if inv and inv.productAvailability=='Out Of Stock':
+                outofstock +=1
         result['outofstock'] = outofstock
-
-        result['storecount'] = Store.objects.all().count()
 
         return Response(result)
 

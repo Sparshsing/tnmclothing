@@ -13,7 +13,7 @@ class Invoice(models.Model):
     storeName = models.CharField(max_length=50)
     invoiceNo = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=10)
-    notes = models.CharField(max_length=500)
+    notes = models.CharField(max_length=500, blank=True)
     subTotal = models.DecimalField(max_digits=9, decimal_places=2)
     discount = models.DecimalField(max_digits=9, decimal_places=2)
     taxrate = models.DecimalField(max_digits=4, decimal_places=2)

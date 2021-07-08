@@ -43,11 +43,11 @@ def create_invoices(startDate, endDate):
             if invoiceno not in list(invoice_amounts.keys()):
                 print('adding invoice for store', order.storeName)
 
-                invoicenote = "invoice from SFM"
+                # invoicenote = "invoice from SFM"
                 # check if the invoice already exists, if so delete the invoice and create new
                 Invoice.objects.filter(invoiceNo=invoiceno).delete()
                 invoice = Invoice(startDate=startDate, endDate=endDate, storeName=order.storeName, store=order.store, invoiceNo=invoiceno,
-                                  status="Unpaid", notes=invoicenote, subTotal=0, discount=0, taxrate=0)
+                                  status="Unpaid", notes="", subTotal=0, discount=0, taxrate=0)
                 invoice.save()
                 invoice_amounts[invoiceno] = 0
 
