@@ -105,7 +105,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         orderStatus = serializer.validated_data['orderStatus']
         # if status has not been changed by user manually
         #if newStatus in ['', 'Printed', 'Shipped']:
-        if orderStatus != 'Cancelled':
+        if orderStatus != 'Cancelled' and orderStatus != 'On Hold':
             orderStatus = 'Unfulfilled'
             if processing == 'Y':
                 orderStatus = 'Processed'
@@ -123,7 +123,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         #     else:
         #         newStatus = "Invalid Product"
         # if status changed to shipped
-        if orderStatus!=oldStatus and orderStatus=="Shipped" and serializer.validated_data['shipDate'] is None:
+        if orderStatus!=oldStatus and orderStatus=="Shipped":
             serializer.save(orderStatus=orderStatus, shipDate=datetime.datetime.utcnow())
         # if status changed from shipped to something else
         elif orderStatus!=oldStatus and oldStatus=="Shipped":
@@ -205,7 +205,6 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'])
     def get_overview(self, request, pk=None):
-        print(request.data, type(request.data))
         store = request.data['store']
         startDate = request.data['startDate']
         endDate = request.data['endDate']
@@ -219,7 +218,6 @@ class OrderViewSet(viewsets.ModelViewSet):
                 orders = orders.filter(store__in=stores)
         else:
             orders = Order.objects.filter(store=store)
-        print(orders)
         if startDate=='' and endDate!='':
             orders = orders.filter(saleDate__lte=endDate)
         elif endDate=='' and startDate!='':
@@ -228,14 +226,16 @@ class OrderViewSet(viewsets.ModelViewSet):
             orders = orders.filter(saleDate__gte=startDate, saleDate__lte=endDate)
         result = {}
         result['total'] = orders.count()
-        result['unfulfilled'] = orders.filter(orderStatus='Unfulfilled').count()
+        result['unfulfilled'] = orders.filter(shipped='N').count()
         result['onhold'] = orders.filter(orderStatus='On Hold').count()
-        result['fulfilled'] = orders.filter(orderStatus__in=['Processed', 'Printed', 'Shipped']).count()
+        result['fulfilled'] = orders.filter(shipped='Y').count()
         outofstock = 0
+        productIds = orders.values('sfmId')
+        inventories = list(Inventory.objects.filter(sfmId__in=productIds))
         for order in orders:
-            inv = Inventory.objects.filter(sfmId=order.sfmId).first()
-            if inv and inv.productAvailability=='Out Of Stock':
-                outofstock +=1
+            inventory_outofstock = [inv for inv in inventories if inv.sfmId == order.sfmId and inv.productAvailability == 'Out Of Stock']
+            if inventory_outofstock:
+                outofstock += 1
         result['outofstock'] = outofstock
 
         return Response(result)

@@ -44,13 +44,17 @@ class ProductViewSet(viewsets.ModelViewSet):
         queryset = Product.objects.filter(sfmId=sfm_id)
         if queryset.exists():
             raise ValidationError(detail={"style": ["style-size-color already exists"]})
-        new_product = serializer.save(sfmId=sfm_id)
-        try:
-            Utilities.create_inventory_record(new_product)
-            logger.info(request.user.username + ' created product ' + sfm_id + 'and an inventory record created automatically')
-        except:
-            logger.error(request.user.username + ' created product ' + sfm_id + 'but inventory creation failed')
-            raise ValidationError(detail={"form": "Product saved but could not create inventory record"})
+        newsku = serializer.validated_data['sku']
+        if newsku == '':
+            newsku = None
+        new_product = serializer.save(sfmId=sfm_id, sku=newsku)
+        # inventory is now created through signals mechanism
+        # try:
+        #     Utilities.create_inventory_record(new_product)
+        #     logger.info(request.user.username + ' created product ' + sfm_id + 'and an inventory record created automatically')
+        # except:
+        #     logger.error(request.user.username + ' created product ' + sfm_id + 'but inventory creation failed')
+        #     raise ValidationError(detail={"form": "Product saved but could not create inventory record"})
         headers = self.get_success_headers(serializer.data)
         logger.info(request.user.username + ' created product ' + sfm_id)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -58,16 +62,21 @@ class ProductViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         sfmId = str(instance.sfmId)
         instance.delete()
-        try:
-            inv = Inventory.objects.get(sfmId=sfmId)
-            inv.delete()
-            logger.info(self.request.user.username + ' deleted product ' + sfmId + ' and inventory record was deleted automatically.')
-        except Exception as e:
-            logger.error(self.request.user.username + ' deleted product ' + sfmId + ' but inventory not deleted. Maybe inventory record was not there')
-            print(e)
+        logger.info(self.request.user.username + ' deleted product ' + sfmId)
+        # inventory is now deleted through signals mechanism
+        # try:
+        #     inv = Inventory.objects.get(sfmId=sfmId)
+        #     inv.delete()
+        #     logger.info(self.request.user.username + ' deleted product ' + sfmId + ' and inventory record was deleted automatically.')
+        # except Exception as e:
+        #     logger.error(self.request.user.username + ' deleted product ' + sfmId + ' but inventory not deleted. Maybe inventory record was not there')
+        #     print(e)
 
     def perform_update(self, serializer):
-        serializer.save()
+        newsku = serializer.validated_data['sku']
+        if newsku == '':
+            newsku = None
+        serializer.save(sku=newsku)
         logger.info(
             self.request.user.username + ' updated product ' + serializer.data['sfmId'])
 
