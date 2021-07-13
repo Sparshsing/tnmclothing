@@ -29,7 +29,7 @@ if DATABASES['default']['ENGINE']!='django.db.backends.sqlite3':
     options_dict = {'autocommit': True}
     DATABASES['default']['OPTIONS'] = options_dict
 
-print(DATABASES)
+# print(DATABASES)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

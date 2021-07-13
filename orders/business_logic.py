@@ -20,7 +20,7 @@ def convert_date(val):
         except ValueError as err:
             newval = datetime.strptime(str(val), '%m/%d/%Y')
         newval = newval.replace(year=datetime.now().year)
-        print(newval, type(newval))
+
         return newval
 
     return val
@@ -36,7 +36,7 @@ class ImportFiles:
         columnNames = list(data)
         newNames = {col: col.strip().replace(' ', '').lower() for col in columnNames}
         data.rename(columns=newNames, inplace=True)
-        print(newNames)
+        # print(newNames)
         print(data.dtypes)
         msg = ''
         failed = False
@@ -124,9 +124,9 @@ class ImportFiles:
             msg = 'Import failed. Please make sure cost column has decimal numbers or empty values'
             failed = True
             return errors, msg, failed
-        print(newNames)
+        # print(newNames)
         for index, row in data.iterrows():
-            print(row)
+            # print(row)
 
             try:
                 orders = Order.objects.filter(orderNo=str(row['ordernumber']).strip())

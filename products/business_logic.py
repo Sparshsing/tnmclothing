@@ -38,11 +38,11 @@ class Utilities:
             failed = True
             return errors, msg, failed
 
-        print(newNames)
+        # print(newNames)
         print(data.dtypes)
         
         for index, row in data.iterrows():
-            print(row)
+            # print(row)
 
             try:
                 product = Product()

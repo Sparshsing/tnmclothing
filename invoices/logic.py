@@ -51,7 +51,7 @@ def create_invoices(startDate, endDate):
                 invoice.save()
                 invoice_amounts[invoiceno] = 0
 
-            print(order.saleDate)
+            # print(order.saleDate)
             orderdate = order.saleDate if order.saleDate is not None else order.shipDate.date()
             invoice = Invoice.objects.get(invoiceNo=invoiceno)
             if order.customerPaidShipping is not None and order.customerPaidShipping > 0 and order.orderNo not in orderNoList:

@@ -24,7 +24,7 @@ DATABASES = {
     'default': config('DATABASE_URL', default=default_dburl, cast=dburl)
 }
 
-print(DATABASES)
+# print(DATABASES)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

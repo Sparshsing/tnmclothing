@@ -16,7 +16,7 @@ def convert_date(val):
         except ValueError as err:
             newval = datetime.strptime(str(val), '%m/%d/%Y')
         newval = newval.replace(year=datetime.now().year)
-        print(newval, type(newval))
+        # print(newval, type(newval))
         return newval
 
     return val
@@ -60,7 +60,7 @@ class Utilities:
         data.rename(columns=newNames, inplace=True)
         msg = ''
         failed = False
-        print(newNames)
+        # print(newNames)
         print(data.dtypes)
 
         columns_needed = {'style', 'size', 'color', 'company',
@@ -82,7 +82,7 @@ class Utilities:
             return errors, msg, failed
 
         for index, row in data.iterrows():
-            print(row)
+            # print(row)
 
             try:
                 purchase = Purchase()
