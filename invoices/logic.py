@@ -47,7 +47,7 @@ def create_invoices(startDate, endDate):
                 # check if the invoice already exists, if so delete the invoice and create new
                 Invoice.objects.filter(invoiceNo=invoiceno).delete()
                 invoice = Invoice(startDate=startDate, endDate=endDate, storeName=order.storeName, store=order.store, invoiceNo=invoiceno,
-                                  status="Unpaid", notes="", subTotal=0, discount=0, taxrate=0)
+                                  status="Unpaid", notes="", subTotal=0, discount=0, taxrate=6)
                 invoice.save()
                 invoice_amounts[invoiceno] = 0
 
